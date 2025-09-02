@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",
+    "@prisma/client": "^6.15.0",
     "@types/qrcode": "^1.5.5",
     "@types/uuid": "^10.0.0",
     "@vercel/blob": "^1.1.1",
