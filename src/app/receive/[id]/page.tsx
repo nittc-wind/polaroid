@@ -24,8 +24,8 @@ export default function ReceivePage() {
         await new Promise<GeolocationPosition>((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject)
         })
-      } catch (err) {
-        console.error('位置情報の取得に失敗:', err)
+      } catch {
+        console.error('位置情報の取得に失敗')
       }
     }
 
@@ -43,7 +43,7 @@ export default function ReceivePage() {
       })
       setLocationPermission(true)
       alert('位置情報の使用を許可しました')
-    } catch (err) {
+    } catch {
       alert('位置情報の使用を許可してください')
     }
   }
