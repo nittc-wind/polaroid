@@ -1,36 +1,130 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📸 ともだちチェキ（仮称）
 
-## Getting Started
+出会いを特別な思い出に変える、チェキ風写真共有アプリ
 
-First, run the development server:
+[![Next.js](https://img.shields.io/badge/Next.js-14.0-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-5.0-2D3748)](https://www.prisma.io/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
+## 🎯 概要
+TwoGate DevCamp2025 Summer 作品
+
+## 🚀 デモ
+
+[デモサイト](https://polaroid-kappa.vercel.app)
+
+## 📦 インストール
+
+### 前提条件
+- Node.js
+- npm
+- Postgres
+
+### セットアップ手順
+
+1. **リポジトリのクローン**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone git@github.com:nittc-wind/polaroid.git
+cd polaroid
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **依存関係のインストール**
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **環境変数の設定**
+```bash
+cp .env.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`.env.local` を編集:
+```env
+```
 
-## Learn More
+4. **データベースのセットアップ**
+```bash
+# Prismaクライアントの生成
+npx prisma generate
 
-To learn more about Next.js, take a look at the following resources:
+# マイグレーションの実行
+npx prisma migrate dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. **開発サーバーの起動**
+```bash
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+http://localhost:3000 でアプリケーションが起動します。
 
-## Deploy on Vercel
+## 📁 プロジェクト構造
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+tomodachi-cheki/
+├── prisma/
+│   └── schema.prisma          # データベーススキーマ
+├── public/                    # 静的ファイル
+├── src/
+│   ├── app/                   # Next.js App Router
+│   │   ├── api/              # APIエンドポイント
+│   │   │   ├── photos/       # 写真CRUD
+│   │   │   ├── qr/          # QR生成・検証
+│   │   │   └── receive/      # 受け取り処理
+│   │   ├── camera/          # 撮影画面
+│   │   ├── qr/[id]/         # QR表示画面
+│   │   ├── photos/          # 写真一覧
+│   │   ├── scan/            # QRスキャン
+│   │   ├── receive/[id]/    # 情報入力
+│   │   ├── develop/[id]/    # 現像画面
+│   │   ├── complete/[id]/   # 完了画面
+│   │   ├── layout.tsx       # 共通レイアウト
+│   │   └── page.tsx         # ホーム画面
+│   ├── components/          # 再利用可能なコンポーネント
+│   │   ├── Camera.tsx       # カメラコンポーネント
+│   │   ├── QRScanner.tsx    # QRスキャナー
+│   │   ├── PhotoViewer.tsx  # 写真ビューアー
+│   │   └── DevelopEffect.tsx # 現像エフェクト
+│   ├── lib/                 # ユーティリティ
+│   │   ├── prisma.ts       # Prismaクライアント
+│   │   └── utils.ts        # 共通関数
+│   └── types/              # TypeScript型定義
+│       └── index.ts
+├── .env.local              # 環境変数（Git管理外）
+├── .gitignore
+├── next.config.js          # Next.js設定
+├── package.json
+├── README.md
+└── tsconfig.json          # TypeScript設定
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🗄️ データベース設計
+
+```mermaid
+erDiagram
+    Photo {
+        uuid id PK
+        string user_id
+        string image_url
+        string qr_code UK
+        datetime created_at
+        datetime expires_at
+        boolean is_received
+        string receiver_name
+        json location
+    }
+```
+
+## 🧪 テスト
+
+```bash
+# ユニットテスト
+npm run test
+
+# E2Eテスト
+npm run test:e2e
+
+# テストカバレッジ
+npm run test:coverage
+```
