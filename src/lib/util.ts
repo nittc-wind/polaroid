@@ -68,15 +68,17 @@ export function formatDateTime(date: Date): string {
   });
 }
 
-export function groupPhotosByDate(photos: any[]) {
-  return photos.reduce((groups, photo) => {
+export function groupPhotosByDate<T extends { createdAt: string | Date }>(
+  photos: T[]
+): Record<string, T[]> {
+  return photos.reduce<Record<string, T[]>>((groups, photo) => {
     const date = formatDate(new Date(photo.createdAt));
     if (!groups[date]) {
-      groups[date] = [];
+      groups[date] = [] as T[];
     }
     groups[date].push(photo);
     return groups;
-  }, {});
+  }, {} as Record<string, T[]>);
 }
 
 export function compressImage(file: File, maxWidth: number = 800, quality: number = 0.8): Promise<Blob> {

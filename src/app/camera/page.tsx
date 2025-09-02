@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function CameraPage() {
   const router = useRouter()
@@ -68,7 +69,7 @@ export default function CameraPage() {
       </div>
 
       <div>
-        <a href="/">ホームに戻る</a>
+        <Link href="/">ホームに戻る</Link>
       </div>
     </div>
   )

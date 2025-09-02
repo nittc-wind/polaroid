@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface Photo {
   id: string
@@ -58,11 +59,12 @@ export default function PhotosPage() {
             {datePhotos.map((photo) => (
               <li key={photo.id}>
                 <div>
-                  <img 
+                  <Image 
                     src={photo.imageUrl} 
-                    alt="写真" 
-                    width="100"
-                    style={{ border: '1px solid #ccc' }}
+                    alt="写真"
+                    width={100}
+                    height={100}
+                    style={{ border: '1px solid #ccc', objectFit: 'cover' }}
                   />
                   <p>
                     {photo.isReceived 

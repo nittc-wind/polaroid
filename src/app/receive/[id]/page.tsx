@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function ReceivePage() {
   const params = useParams()
@@ -20,10 +21,9 @@ export default function ReceivePage() {
     // 位置情報を取得
     if (locationPermission) {
       try {
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        await new Promise<GeolocationPosition>((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject)
         })
-        console.log('位置情報:', position.coords)
       } catch (err) {
         console.error('位置情報の取得に失敗:', err)
       }
@@ -38,7 +38,7 @@ export default function ReceivePage() {
 
   const requestLocationPermission = async () => {
     try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+      await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject)
       })
       setLocationPermission(true)
@@ -88,7 +88,7 @@ export default function ReceivePage() {
       </form>
 
       <div>
-        <a href="/">キャンセル</a>
+        <Link href="/">キャンセル</Link>
       </div>
     </div>
   )

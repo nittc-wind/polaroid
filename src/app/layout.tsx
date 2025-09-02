@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'ともだちチェキ',
@@ -14,7 +15,7 @@ export default function RootLayout({
     <html lang="ja">
       <body>
         <header>
-          <a href="/">ともだちチェキ</a>
+          <Link href="/">ともだちチェキ</Link>
         </header>
         <main>
           {children}
