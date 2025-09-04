@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+}
+
+model Photo {
+  id           String    @id @default(uuid())
+  deviceId     String    @map("device_id")
+  imageUrl     String    @map("image_url")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  expiresAt    DateTime  @map("expires_at")
+  
+  // 受け取り情報
+  isReceived   Boolean   @default(false) @map("is_received")
+  receiverName String?   @map("receiver_name")
+  receivedAt   DateTime? @map("received_at")
+  location     Json?
+  
+  @@index([deviceId, createdAt])
+  @@index([expiresAt])
+  @@map("photos")
+}
