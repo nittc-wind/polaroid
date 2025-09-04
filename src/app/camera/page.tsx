@@ -53,46 +53,46 @@ export default function CameraPage(){
   }
 
   return (
-      
-    <div className="flex justify-center">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle>写真を撮る</CardTitle>
-          <CardDescription>Card Description</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p>Card Content</p>
-          <div>
-            <h1>写真を撮る</h1>
-            <video 
-              ref={videoRef} 
-              autoPlay 
-              playsInline
-              width="100%"
-              style={{ maxWidth: '500px' }}
-            />
-            <canvas ref={canvasRef} style={{ display: 'none' }} />
-          </div>
+    <div className="container min-h-screen flex items-center justify-center bg-[#fafafa]">
+      <div className="inner w-full max-w-md mx-auto">
+          <Card className="card">
+            <CardHeader>
+              <Button variant="ghost" className="w-fit p-2">
+                <Link href="/" className="flex items-center text-[#737373] hover:text-[#0a0a0a] text-sm">
+                  <ArrowLeft className="w-4 h-4 mr-1" />
+                </Link>
+              </Button>
+              <CardTitle className="text-[#0a0a0a] text-lg font-medium">写真を撮る</CardTitle>
+              <CardDescription className="text-[#737373] text-sm">カメラで撮影してください</CardDescription>
+            </CardHeader>
+            <CardContent className="card-body">
+              <div className="mb-6">
+                <video 
+                  ref={videoRef} 
+                  autoPlay 
+                  playsInline
+                  className="w-full rounded-lg"
+                  style={{ maxWidth: '400px', aspectRatio: '4/3' }}
+                />
+                <canvas ref={canvasRef} style={{ display: 'none' }} />
+              </div>
 
-          <div>
-            {!isStreamReady ? (
-              <button onClick={startCamera}>カメラを起動</button>
-            ) : (
-              <button onClick={capture}>撮影する</button>
-            )}
-          </div>
-
-          <div>
-            <Link href="/">ホームに戻る</Link>
-      </div>
-        </CardContent>
-        <CardFooter>
-          <p>Card Footer</p>
-        </CardFooter>
-      </Card>
-      
-      
-      
+              <div className="flex flex-col gap-3">
+                {!isStreamReady ? (
+                  <Button onClick={startCamera} className="button">
+                    <Camera className="w-4 h-4 mr-2" />
+                    カメラを起動
+                  </Button>
+                ) : (
+                  <Button onClick={capture} className="button">
+                    <Camera className="w-4 h-4 mr-2" />
+                    撮影する
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+      </div> 
     </div>
   )
 }

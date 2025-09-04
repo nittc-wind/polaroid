@@ -23,6 +23,7 @@ export default function RootLayout({
         </main>
         <footer>
           <p>&copy; 2024 ともだちチェキ</p>
+          <Link href="/receive/sample-id">開発用</Link>
         </footer>
       </body>
     </html>
