@@ -1,97 +1,45 @@
-'use client'
+import { Camera, Divide ,ArrowLeft} from "lucide-react"
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-
-interface Photo {
-  id: string
-  createdAt: string
-  isReceived: boolean
-  receiverName?: string
-  imageUrl: string
-}
-
-export default function PhotosPage() {
-  const [photos, setPhotos] = useState<Photo[]>([])
-  const [groupedPhotos, setGroupedPhotos] = useState<Record<string, Photo[]>>({})
-
-  useEffect(() => {
-    // TODO: APIから写真一覧を取得
-    // 仮データ
-    const mockPhotos: Photo[] = [
-      {
-        id: '1',
-        createdAt: new Date().toISOString(),
-        isReceived: true,
-        receiverName: '田中太郎',
-        imageUrl: '/sample.jpg'
-      },
-      {
-        id: '2',
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
-        isReceived: false,
-        imageUrl: '/sample2.jpg'
-      }
-    ]
-    
-    setPhotos(mockPhotos)
-    
-    // 日付でグルーピング
-    const grouped = mockPhotos.reduce((acc, photo) => {
-      const date = new Date(photo.createdAt).toLocaleDateString('ja-JP')
-      if (!acc[date]) acc[date] = []
-      acc[date].push(photo)
-      return acc
-    }, {} as Record<string, Photo[]>)
-    
-    setGroupedPhotos(grouped)
-  }, [])
-
+export default function MemoriesPage() {
   return (
-    <div>
-      <h1>写真一覧</h1>
+    <div className="container">
+      <div className="inner">
+        <Card className="card">
+          <CardContent className="card-body">
+            <div>
+                <Button variant="ghost">
+                  <Link href="/" className="flex items-center text-[#737373] hover:text-[#0a0a0a] text-sm">
+                    <ArrowLeft className="w-4 h-4 mr-1" />
+                  </Link>
+                </Button>
+              <h2 className="text-[#0a0a0a] text-lg font-medium mb-2">思い出一覧</h2>
+              <p className="text-[#737373] text-sm">写真を見返す</p>
+            </div>
+          </CardContent>
 
-      {Object.entries(groupedPhotos).map(([date, datePhotos]) => (
-        <div key={date}>
-          <h2>{date}</h2>
-          <ul>
-            {datePhotos.map((photo) => (
-              <li key={photo.id}>
-                <div>
-                  <Image 
-                    src={photo.imageUrl} 
-                    alt="写真"
-                    width={100}
-                    height={100}
-                    style={{ border: '1px solid #ccc', objectFit: 'cover' }}
-                  />
-                  <p>
-                    {photo.isReceived 
-                      ? `✅ ${photo.receiverName}さんが受け取りました`
-                      : '⏳ 受け取り待ち'
-                    }
-                  </p>
-                  <p>
-                    {new Date(photo.createdAt).toLocaleTimeString('ja-JP')}
-                  </p>
-                </div>
-              </li>
+          <div className="grid grid-cols-3 gap-3 flex-1">
+            {Array.from({ length: 9 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-[#e5e5e5] rounded-lg aspect-square flex items-center justify-center hover:bg-[#d9d9d9] transition-colors cursor-pointer"
+              >
+                <Camera className="w-6 h-6 text-[#737373]" />
+              </div>
             ))}
-          </ul>
-        </div>
-      ))}
-
-      {photos.length === 0 && (
-        <p>まだ写真がありません</p>
-      )}
-
-      <nav>
-        <ul>
-          <li><Link href="/camera">写真を撮る</Link></li>
-          <li><Link href="/">ホームに戻る</Link></li>
-        </ul>
-      </nav>
+          </div>
+        </Card>
+      </div>
     </div>
   )
 }

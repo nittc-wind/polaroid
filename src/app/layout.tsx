@@ -1,3 +1,4 @@
+import "@/app/globals.css";
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -22,6 +23,7 @@ export default function RootLayout({
         </main>
         <footer>
           <p>&copy; 2024 ともだちチェキ</p>
+          <Link href="/receive/sample-id">開発用</Link>
         </footer>
       </body>
     </html>
