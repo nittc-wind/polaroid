@@ -8,6 +8,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ## 🎯 概要
+
 TwoGate DevCamp2025 Summer 作品
 
 ## 🚀 デモ
@@ -17,42 +18,41 @@ TwoGate DevCamp2025 Summer 作品
 ## 📦 インストール
 
 ### 前提条件
+
 - Node.js
 - npm
-- Postgres
+- Vercel アカウント（Neon ストレージ連携）
+- Vercel CLI（`npm i -g vercel`）
 
 ### セットアップ手順
 
 1. **リポジトリのクローン**
+
 ```bash
 git clone git@github.com:nittc-wind/polaroid.git
 cd polaroid
 ```
 
 2. **依存関係のインストール**
+
 ```bash
 npm install
 ```
 
-3. **環境変数の設定**
+3. **Vercel プロジェクトに接続（未接続の場合）**
+
 ```bash
-cp .env.example .env.local
+vercel link
 ```
 
-`.env.local` を編集:
-```env
-```
+4. **環境変数を取得（Neon の DATABASE_URL など）**
 
-4. **データベースのセットアップ**
 ```bash
-# Prismaクライアントの生成
-npx prisma generate
-
-# マイグレーションの実行
-npx prisma migrate dev
+vercel env pull .env.development.local
 ```
 
 5. **開発サーバーの起動**
+
 ```bash
 npm run dev
 ```

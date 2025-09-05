@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardAction,
@@ -7,8 +7,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import Link from "next/link"
+} from "@/components/ui/card";
+import Link from "next/link";
 
 export default function HomePage() {
   return (
@@ -22,15 +22,19 @@ export default function HomePage() {
 
           <div className="flex flex-col gap-6">
             <Button className="button">
-              <Link href="/camera" className="block">写真を撮る</Link>
+              <Link href="/camera" className="block">
+                写真を撮る
+              </Link>
             </Button>
-            
+
             <Button className="button">
-              <Link href="/photos" className="block">思い出</Link>
+              <Link href="/photos" className="block">
+                思い出
+              </Link>
             </Button>
           </div>
         </Card>
       </div>
     </div>
-  )
+  );
 }

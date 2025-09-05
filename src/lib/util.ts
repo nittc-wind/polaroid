@@ -1,13 +1,13 @@
-import QRCode from 'qrcode';
-import { v4 as uuidv4 } from 'uuid';
+import QRCode from "qrcode";
+import { v4 as uuidv4 } from "uuid";
 
 export function generateUserId(): string {
   // localStorageから取得、なければ新規作成
-  if (typeof window !== 'undefined') {
-    let userId = localStorage.getItem('tomodachi-cheki-user-id');
+  if (typeof window !== "undefined") {
+    let userId = localStorage.getItem("tomodachi-cheki-user-id");
     if (!userId) {
       userId = uuidv4();
-      localStorage.setItem('tomodachi-cheki-user-id', userId);
+      localStorage.setItem("tomodachi-cheki-user-id", userId);
     }
     return userId;
   }
@@ -20,19 +20,19 @@ export async function generateQRCode(data: string): Promise<string> {
       width: 300,
       margin: 2,
       color: {
-        dark: '#000000',
-        light: '#FFFFFF'
-      }
+        dark: "#000000",
+        light: "#FFFFFF",
+      },
     });
     return qrCodeDataURL;
   } catch (error) {
-    console.error('Error generating QR code:', error);
+    console.error("Error generating QR code:", error);
     throw error;
   }
 }
 
 export function generateQRCodeData(photoId: string): string {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   return `${baseUrl}/receive/${photoId}`;
 }
 
@@ -51,40 +51,47 @@ export function getExpirationTime(): Date {
 }
 
 export function formatDate(date: Date): string {
-  return date.toLocaleDateString('ja-JP', {
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric'
+  return date.toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
   });
 }
 
 export function formatDateTime(date: Date): string {
-  return date.toLocaleDateString('ja-JP', {
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  return date.toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
 export function groupPhotosByDate<T extends { createdAt: string | Date }>(
-  photos: T[]
+  photos: T[],
 ): Record<string, T[]> {
-  return photos.reduce<Record<string, T[]>>((groups, photo) => {
-    const date = formatDate(new Date(photo.createdAt));
-    if (!groups[date]) {
-      groups[date] = [] as T[];
-    }
-    groups[date].push(photo);
-    return groups;
-  }, {} as Record<string, T[]>);
+  return photos.reduce<Record<string, T[]>>(
+    (groups, photo) => {
+      const date = formatDate(new Date(photo.createdAt));
+      if (!groups[date]) {
+        groups[date] = [] as T[];
+      }
+      groups[date].push(photo);
+      return groups;
+    },
+    {} as Record<string, T[]>,
+  );
 }
 
-export function compressImage(file: File, maxWidth: number = 800, quality: number = 0.8): Promise<Blob> {
+export function compressImage(
+  file: File,
+  maxWidth: number = 800,
+  quality: number = 0.8,
+): Promise<Blob> {
   return new Promise((resolve) => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d')!;
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d")!;
     const img = new Image();
 
     img.onload = () => {
@@ -95,19 +102,27 @@ export function compressImage(file: File, maxWidth: number = 800, quality: numbe
 
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-      canvas.toBlob((blob) => {
-        resolve(blob!);
-      }, 'image/png', quality);
+      canvas.toBlob(
+        (blob) => {
+          resolve(blob!);
+        },
+        "image/png",
+        quality,
+      );
     };
 
     img.src = URL.createObjectURL(file);
   });
 }
 
-export function addTextToImage(imageBlob: Blob, text: string, date: string): Promise<Blob> {
+export function addTextToImage(
+  imageBlob: Blob,
+  text: string,
+  date: string,
+): Promise<Blob> {
   return new Promise((resolve) => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d')!;
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d")!;
     const img = new Image();
 
     img.onload = () => {
@@ -118,9 +133,9 @@ export function addTextToImage(imageBlob: Blob, text: string, date: string): Pro
       ctx.drawImage(img, 0, 0);
 
       // テキスト設定
-      ctx.font = '20px Arial';
-      ctx.fillStyle = 'white';
-      ctx.strokeStyle = 'black';
+      ctx.font = "20px Arial";
+      ctx.fillStyle = "white";
+      ctx.strokeStyle = "black";
       ctx.lineWidth = 2;
 
       // 名前を下部に追加
@@ -133,7 +148,7 @@ export function addTextToImage(imageBlob: Blob, text: string, date: string): Pro
 
       canvas.toBlob((blob) => {
         resolve(blob!);
-      }, 'image/png');
+      }, "image/png");
     };
 
     img.src = URL.createObjectURL(imageBlob);
