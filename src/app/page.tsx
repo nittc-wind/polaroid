@@ -16,7 +16,7 @@ export default function HomePage() {
       <div className="inner">
         <Card className="card">
           <div className="card-body">
-            <h2 className="text-[#0a0a0a] text-xl font-medium mb-2">ともだちチェキ</h2>
+            <h2 className="text-[#331515] text-xl font-medium mb-2">ともだちチェキ</h2>
             <p className="text-[#737373] text-sm mb-8">新しい名刺交換の形</p>
           </div>
 

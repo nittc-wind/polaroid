@@ -16,13 +16,13 @@ export default function MemoriesPage() {
     <div className="container">
       <div className="inner">
         <Card className="card">
+          <Button className="w-fit p-2" variant="ghost">
+            <Link href="/" className="flex items-center text-[#737373] hover:text-[#0a0a0a] text-sm">
+              <ArrowLeft className="w-4 h-4 mr-1" />
+            </Link>
+          </Button>
           <CardContent className="card-body">
             <div>
-                <Button variant="ghost">
-                  <Link href="/" className="flex items-center text-[#737373] hover:text-[#0a0a0a] text-sm">
-                    <ArrowLeft className="w-4 h-4 mr-1" />
-                  </Link>
-                </Button>
               <h2 className="text-[#0a0a0a] text-lg font-medium mb-2">思い出一覧</h2>
               <p className="text-[#737373] text-sm">写真を見返す</p>
             </div>
