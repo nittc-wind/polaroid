@@ -88,16 +88,12 @@ export default function ReceivePage({
   };
 
   return (
-    <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-6">
-      <div className="max-w-md w-full">
-        <div className="bg-[#ffffff] rounded-xl p-6">
-          <div className="mb-6">
-            <h2 className="text-lg font-medium text-[#0a0a0a] mb-2">
-              写真を受け取る
-            </h2>
-            <p className="text-sm text-[#737373]">
-              あなたの情報を入力してください
-            </p>
+    <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        <div className="bg-white rounded-2xl p-4 max-h-[90vh] overflow-y-auto">
+          <div className="mb-3">
+            <h1 className="text-base font-medium text-[#0a0a0a] mb-1">写真を受け取る</h1>
+            <p className="text-xs text-[#737373]">あなたの情報を入力してください</p>
           </div>
 
           <form onSubmit={handleSubmit}>
@@ -143,7 +139,7 @@ export default function ReceivePage({
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 bg-[#603736] hover:bg-[#331515] text-white"
+                  className="flex-1 bg-[#603736] hover:bg-[#331515] text-white py-2"
                 >
                   現像を開始
                 </Button>

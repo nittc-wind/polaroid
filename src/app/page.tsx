@@ -12,26 +12,28 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <div className="container">
-      <div className="inner">
-        <Card className="card">
-          <div className="card-body">
-            <h2 className="text-[#331515] text-xl font-medium mb-2">ともだちチェキ</h2>
-            <p className="text-[#737373] text-sm mb-8">新しい名刺交換の形</p>
-          </div>
+    <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        <Card className="bg-white rounded-2xl p-6 max-h-[85vh] flex flex-col">
+          <div className="flex-1 flex flex-col justify-center">
+            <div className="text-center mb-6">
+              <h2 className="text-[#331515] text-xl font-medium mb-2">ともだちチェキ</h2>
+              <p className="text-[#737373] text-sm">新しい名刺交換の形</p>
+            </div>
 
-          <div className="flex flex-col gap-6">
-            <Button className="button">
-              <Link href="/camera" className="block">
-                写真を撮る
-              </Link>
-            </Button>
+            <div className="flex gap-3">
+              <Button className="flex-1 bg-[#603736] hover:bg-[#331515] text-white py-2 text-sm">
+                <Link href="/camera" className="block w-full">
+                  写真を撮る
+                </Link>
+              </Button>
 
-            <Button className="button">
-              <Link href="/photos" className="block">
-                思い出
-              </Link>
-            </Button>
+              <Button className="flex-1 bg-[#603736] hover:bg-[#331515] text-white py-2 text-sm">
+                <Link href="/photos" className="block w-full">
+                  思い出
+                </Link>
+              </Button>
+            </div>
           </div>
         </Card>
       </div>

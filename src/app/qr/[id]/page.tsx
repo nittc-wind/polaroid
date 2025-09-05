@@ -26,47 +26,42 @@ export default function QRPage({
   }, [id]);
 
   return (
-    <div className="container min-h-screen flex items-center justify-center bg-[#fafafa]">
-      <div className="inner w-full max-w-md mx-auto">
-        <Card className="card">
-          <CardHeader>
-            <CardTitle className="text-lg">
+    <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        <Card className="bg-white rounded-2xl p-4 max-h-[90vh] flex flex-col">
+          <div className="text-center mb-3">
+            <h1 className="text-base font-medium text-[#0a0a0a]">
               QRコードを相手に見せてください
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-6">
-            {qrCodeUrl ? (
-              <img src={qrCodeUrl} alt="QRコード" className="w-48 h-48" />
-            ) : (
-              <div className="w-48 h-48 bg-gray-200 animate-pulse rounded" />
-            )}
-            <p className="text-sm text-[#737373]">
+            </h1>
+          </div>
+          <CardContent className="flex-1 flex flex-col items-center gap-4 p-0">
+            <div className="flex-1 flex items-center justify-center">
+              {qrCodeUrl ? (
+                <img src={qrCodeUrl} alt="QRコード" className="w-40 h-40 max-w-[60vw] max-h-[30vh]" />
+              ) : (
+                <div className="w-40 h-40 bg-gray-200 animate-pulse rounded" />
+              )}
+            </div>
+            <p className="text-xs text-[#737373] text-center px-2">
               相手は標準カメラでQRを読み取ってください
             </p>
-            <Button variant="ghost" className="w-full">
-              <Link
-                href="/camera"
-                className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
-              >
-                もう一度撮影する
-              </Link>
-            </Button>
-            <Button variant="ghost" className="w-full">
-              <Link
-                href="/photos"
-                className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
-              >
-                写真一覧を見る
-              </Link>
-            </Button>
-            <Button variant="ghost" className="w-full">
-              <Link
-                href="/"
-                className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
-              >
-                ホームに戻る
-              </Link>
-            </Button>
+            <div className="w-full space-y-2">
+              <Button variant="ghost" className="w-full py-2">
+                <Link href="/camera" className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm">
+                  もう一度撮影する
+                </Link>
+              </Button>
+              <Button variant="ghost" className="w-full py-2">
+                <Link href="/photos" className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm">
+                  写真一覧を見る
+                </Link>
+              </Button>
+              <Button variant="ghost" className="w-full py-2">
+                <Link href="/" className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm">
+                  ホームに戻る
+                </Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

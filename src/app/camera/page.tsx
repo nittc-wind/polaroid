@@ -93,45 +93,40 @@ export default function CameraPage() {
     );
   };
   return (
-    <div className="container min-h-screen flex items-center justify-center bg-[#fafafa]">
-      <div className="inner w-full max-w-md mx-auto">
-        <Card className="card">
-          <CardHeader>
-            <Button variant="ghost" className="w-fit p-2">
-              <Link
-                href="/"
-                className="flex items-center text-[#737373] hover:text-[#0a0a0a] text-sm"
-              >
-                <ArrowLeft className="w-4 h-4 mr-1" />
+    <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        <Card className="bg-white rounded-2xl p-4 max-h-[90vh] flex flex-col">
+          <div className="flex items-center gap-2 mb-3">
+            <Button variant="ghost" className="w-fit p-1">
+              <Link href="/" className="flex items-center text-[#737373] hover:text-[#0a0a0a]">
+                <ArrowLeft className="w-4 h-4" />
               </Link>
             </Button>
-            <CardTitle className="text-[#0a0a0a] text-lg font-medium">
-              写真を撮る
-            </CardTitle>
-            <CardDescription className="text-[#737373] text-sm">
-              カメラで撮影してください
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="card-body">
-            <div className="mb-6">
+            <div>
+              <h1 className="text-[#0a0a0a] text-base font-medium">写真を撮る</h1>
+              <p className="text-[#737373] text-xs">カメラで撮影してください</p>
+            </div>
+          </div>
+          <CardContent className="flex-1 p-0 flex flex-col">
+            <div className="mb-4 flex-1">
               <video
                 ref={videoRef}
                 autoPlay
                 playsInline
                 className="w-full rounded-lg"
-                style={{ maxWidth: "400px", aspectRatio: "4/3" }}
+                style={{ maxWidth: "100%", aspectRatio: "4/3", maxHeight: "40vh" }}
               />
               <canvas ref={canvasRef} style={{ display: "none" }} />
             </div>
 
             <div className="flex flex-col gap-3">
               {!isStreamReady ? (
-                <Button onClick={startCamera} className="button">
+                <Button onClick={startCamera} className="w-full bg-[#603736] hover:bg-[#331515] text-white py-3">
                   <Camera className="w-4 h-4 mr-2" />
                   カメラを起動
                 </Button>
               ) : (
-                <Button onClick={capture} className="button">
+                <Button onClick={capture} className="w-full bg-[#603736] hover:bg-[#331515] text-white py-3">
                   <Camera className="w-4 h-4 mr-2" />
                   撮影する
                 </Button>
