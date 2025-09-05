@@ -1,3 +1,9 @@
+export interface Location {
+  latitude: number;
+  longitude: number;
+  address?: string;
+}
+
 export interface Photo {
   id: string;
   userId: string;
@@ -7,7 +13,8 @@ export interface Photo {
   expiresAt: Date;
   isReceived: boolean;
   receiverName?: string;
-  location?: string;
+  receivedAt?: Date;
+  location?: Location;
 }
 
 export interface CreatePhotoRequest {
@@ -25,7 +32,7 @@ export interface CreatePhotoResponse {
 export interface ReceivePhotoRequest {
   photoId: string;
   receiverName: string;
-  location?: string;
+  location?: Location;
 }
 
 export interface ReceivePhotoResponse {
@@ -47,7 +54,8 @@ export interface PhotoListItem {
   createdAt: Date;
   isReceived: boolean;
   receiverName?: string;
-  location?: string;
+  receivedAt?: Date;
+  location?: Location;
 }
 
 export interface GroupedPhotos {
