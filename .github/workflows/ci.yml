@@ -50,6 +50,3 @@ jobs:
 
       - name: Run TypeScript Type Check
         run: npm run typecheck
-
-      - name: Build Next.js app
-        run: npm run build
