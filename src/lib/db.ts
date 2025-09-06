@@ -20,6 +20,16 @@ export interface Photo {
   } | null;
 }
 
+// User型定義
+export interface User {
+  id: string;
+  email: string;
+  password_hash: string;
+  handle_name: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
 // ヘルパー関数
 export async function createPhoto(data: {
   device_id: string;
@@ -36,6 +46,20 @@ export async function createPhoto(data: {
   `;
 
   return result[0] as Photo;
+}
+
+// 最低限のユーザー作成関数（insertのみ、バリデーション・認証なし）
+export async function createUser(data: {
+  email: string;
+  password_hash: string;
+  handle_name: string;
+}) {
+  const result = await sql`
+    INSERT INTO "user" (email, password_hash, handle_name)
+    VALUES (${data.email}, ${data.password_hash}, ${data.handle_name})
+    RETURNING *
+  `;
+  return result[0] as User;
 }
 
 export async function getPhoto(id: string) {

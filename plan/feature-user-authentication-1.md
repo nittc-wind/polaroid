@@ -178,8 +178,6 @@ CREATE INDEX idx_photos_user_id ON photos(user_id);
 CREATE INDEX idx_photos_user_created ON photos(user_id, created_at DESC);
 ```
 
-## テーブル構造詳細
-
 ### Users テーブル
 
 | カラム名      | 型                       | 制約                           | 説明                               |
