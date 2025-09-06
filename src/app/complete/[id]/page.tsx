@@ -5,6 +5,14 @@ import { use } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+
 import { Download, Share, ImageIcon } from "lucide-react";
 
 interface PhotoData {
@@ -75,160 +83,99 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
     }
   };
 
-  const handleShare = async () => {
+  const handleShare = () => {
+    // TODO: シェア機能の実装
     if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "ともだちチェキ",
-          text: `${photoData?.receiverName || "友達"}との思い出の写真です！`,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.error("Share failed:", err);
-      }
+      navigator.share({
+        title: "ともだちチェキ",
+        text: "友達との思い出をチェキで残しました！",
+        url: window.location.href,
+      });
     } else {
       // フォールバック: URLをクリップボードにコピー
       navigator.clipboard.writeText(window.location.href);
-      alert("URLをクリップボードにコピーしました");
+      alert("URLをクリップボードにコピーしました！");
     }
   };
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("ja-JP", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date(date));
-  };
-
-  const getLocationText = () => {
-    if (!photoData?.location) return "";
-    if (photoData.location.address) return photoData.location.address;
-    return `${photoData.location.latitude.toFixed(4)}, ${photoData.location.longitude.toFixed(4)}`;
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-6">
-        <div className="max-w-md w-full">
-          <div className="bg-[#ffffff] rounded-xl p-6 text-center">
-            <div className="w-16 h-16 bg-[#e5e5e5] rounded-lg flex items-center justify-center mx-auto mb-4">
-              <ImageIcon className="w-8 h-8 text-[#737373]" />
-            </div>
-            <h2 className="text-lg font-medium text-[#0a0a0a] mb-2">
-              写真を読み込み中...
-            </h2>
-            <p className="text-sm text-[#737373]">しばらくお待ちください</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-6">
-        <div className="max-w-md w-full">
-          <div className="bg-[#ffffff] rounded-xl p-6 text-center">
-            <h2 className="text-lg font-medium text-[#0a0a0a] mb-2">
-              エラーが発生しました
-            </h2>
-            <p className="text-sm text-[#737373] mb-6">{error}</p>
-            <Button variant="outline" asChild>
-              <Link href="/">ホームに戻る</Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-6">
-      <div className="max-w-md w-full">
-        <div className="bg-[#ffffff] rounded-xl p-6">
-          <div className="mb-6">
-            <h2 className="text-lg font-medium text-[#0a0a0a] mb-2">
-              写真が完成しました！
-            </h2>
-            <p className="text-sm text-[#737373]">
-              あなたの思い出がチェキになりました
-            </p>
-          </div>
-
-          {/* チェキ風の写真表示 */}
-          <div className="mb-6 flex justify-center">
-            <div
-              className="bg-white p-4 rounded-lg shadow-lg"
-              style={{ width: "280px" }}
-            >
-              <div className="relative aspect-square overflow-hidden rounded-md mb-3">
-                {photoData?.imageUrl ? (
-                  <Image
-                    src={photoData.imageUrl}
-                    alt="完成した写真"
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-[#e5e5e5] flex items-center justify-center">
-                    <ImageIcon className="w-12 h-12 text-[#737373]" />
-                  </div>
-                )}
-              </div>
-
-              {/* チェキのメモ部分 */}
-              <div className="text-center space-y-1">
-                {photoData?.receiverName && (
-                  <p className="text-sm font-medium text-[#0a0a0a]">
-                    {photoData.receiverName}
-                  </p>
-                )}
-                <p className="text-xs text-[#737373]">
-                  {photoData &&
-                    formatDate(photoData.receivedAt || photoData.createdAt)}
-                  {getLocationText() && ` - ${getLocationText()}`}
-                </p>
-              </div>
+    <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        <Card className="bg-white rounded-3xl p-8 shadow-lg flex flex-col">
+          <CardHeader className="p-0 mb-6 text-center">
+            <CardTitle className="text-[#603636] text-xl font-medium mb-2">
+              現像が完了しました！
+            </CardTitle>
+            <CardDescription className="text-[#737373] text-sm">
+              完成した写真を保存・シェアできます
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center p-0">
+            <div className="bg-[#e5e5e5] rounded-2xl aspect-[4/5] flex items-center justify-center mb-6 relative overflow-hidden w-full">
+              {photoData?.imageUrl ? (
+                <Image
+                  src={photoData.imageUrl}
+                  alt="完成した写真"
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className="w-16 h-16 flex items-center justify-center">
+                  <svg
+                    width="48"
+                    height="48"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#737373"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <circle cx="9" cy="9" r="2" />
+                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                  </svg>
+                </div>
+              )}
             </div>
-          </div>
-
-          {/* アクションボタン */}
-          <div className="flex gap-3 mb-6">
-            <Button
-              onClick={handleDownload}
-              className="flex-1 bg-[#603736] hover:bg-[#331515] text-white"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              保存する
-            </Button>
-            <Button onClick={handleShare} variant="outline" className="flex-1">
-              <Share className="w-4 h-4 mr-2" />
-              シェア
-            </Button>
-          </div>
-
-          {/* アプリ宣伝 */}
-          <div className="border border-[#e5e5e5] rounded-lg p-4 mb-4">
-            <h3 className="text-sm font-medium text-[#0a0a0a] mb-2">
-              ともだちチェキを使ってみませんか？
-            </h3>
-            <p className="text-xs text-[#737373] mb-3">
-              あなたも友達との思い出を特別な形で残しましょう！
-            </p>
-            <Button
-              asChild
-              className="w-full bg-[#603736] hover:bg-[#331515] text-white"
-            >
-              <Link href="/">アプリを使ってみる</Link>
-            </Button>
-          </div>
-
-          {/* 注意事項 */}
-          <p className="text-xs text-[#737373] text-center">
-            ※ この写真は24時間後に自動的に削除されます
-          </p>
-        </div>
+            <div className="flex flex-row gap-3 mb-6 w-full">
+              <Button
+                onClick={handleDownload}
+                className="flex-1 bg-[#603636] hover:bg-[#603636]/90 text-white rounded-xl py-3"
+              >
+                保存する
+              </Button>
+              <Button
+                onClick={handleShare}
+                variant="outline"
+                className="flex-1 border-[#603636] text-[#603636] hover:bg-[#603636]/5 rounded-xl py-3 bg-transparent"
+              >
+                シェアする
+              </Button>
+            </div>
+            <div className="text-center space-y-3 w-full">
+              <div>
+                <CardTitle className="text-[#603636] text-base font-medium mb-1">
+                  ともだちチェキを使ってみませんか？
+                </CardTitle>
+                <CardDescription className="text-[#737373] text-xs">
+                  あなたも友達との思い出を特別な形で残しましょう！
+                </CardDescription>
+              </div>
+              <Button
+                variant="ghost"
+                className="w-full text-[#603636] hover:bg-[#603636]/5"
+              >
+                <Link href="/" className="w-full block">
+                  アプリを使ってみる
+                </Link>
+              </Button>
+              <p className="text-[#737373] text-xs">
+                ※ この写真は24時間後に自動的に削除されます
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
