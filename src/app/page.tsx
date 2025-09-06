@@ -12,11 +12,11 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <div className="container">
-      <div className="inner">
-        <Card className="card">
-          <div className="card-body">
-            <h2 className="text-[#0a0a0a] text-xl font-medium mb-2">
+    <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        <Card className="bg-white rounded-2xl p-6 max-h-[85vh] flex flex-col">
+          <CardHeader className="p-0 mb-6 text-center">
+            <CardTitle className="text-[#331515] text-xl font-medium mb-2">
               ともだちチェキ
             </h2>
             <p className="text-[#737373] text-sm mb-8">新しい名刺交換の形</p>

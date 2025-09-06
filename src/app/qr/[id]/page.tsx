@@ -4,7 +4,13 @@ import * as React from "react";
 import { useParams } from "next/navigation";
 // ...existing code...
 import { generateQRCode, generateQRCodeData } from "@/lib/util";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -26,21 +32,14 @@ export default function QRPage({
   }, [id]);
 
   return (
-    <div className="container min-h-screen flex items-center justify-center bg-[#fafafa]">
-      <div className="inner w-full max-w-md mx-auto">
-        <Card className="card">
-          <CardHeader>
-            <CardTitle className="text-lg">
+    <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        <Card className="bg-white rounded-2xl p-4 max-h-[90vh] flex flex-col">
+          <CardHeader className="p-0 mb-3 text-center">
+            <CardTitle className="text-base font-medium text-[#0a0a0a]">
               QRコードを相手に見せてください
             </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-6">
-            {qrCodeUrl ? (
-              <img src={qrCodeUrl} alt="QRコード" className="w-48 h-48" />
-            ) : (
-              <div className="w-48 h-48 bg-gray-200 animate-pulse rounded" />
-            )}
-            <p className="text-sm text-[#737373]">
+            <CardDescription className="text-[#737373] text-xs">
               相手は標準カメラでQRを読み取ってください
             </p>
             <Button variant="ghost" className="w-full" asChild>

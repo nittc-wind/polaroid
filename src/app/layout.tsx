@@ -15,13 +15,15 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body>
-        <header>
+        <header className="text-[#fff] bg-[#603636]">
           <Link href="/">ともだちチェキ</Link>
         </header>
         <main>{children}</main>
         <footer>
           <p>&copy; 2024 ともだちチェキ</p>
           <Link href="/receive/sample-id">開発用</Link>
+          <Link href="/develop/sample-id">開発用2</Link>
+          <Link href="/complete/sample-id">開発用3</Link>
         </footer>
       </body>
     </html>
