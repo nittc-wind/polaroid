@@ -1,24 +1,82 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { use } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
-export default function Page() {
-  const params = useParams();
-  const [photoUrl, setPhotoUrl] = useState<string>("");
+import { Download, Share, ImageIcon } from "lucide-react";
+
+
+interface PhotoData {
+  id: string;
+  imageUrl: string;
+  receiverName: string | null;
+  receivedAt: Date | null;
+  location: {
+    latitude: number;
+    longitude: number;
+    address?: string;
+  } | null;
+  createdAt: Date;
+}
+
+export default function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const [photoData, setPhotoData] = useState<PhotoData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // TODO: APIから写真URLを取得
-    setPhotoUrl("/sample-photo.jpg");
-  }, [params.id]);
+    const fetchPhoto = async () => {
+      try {
+        const response = await fetch(`/api/photos/${id}`);
 
-  const handleDownload = () => {
-    // TODO: 実際のダウンロード処理
-    alert("写真をダウンロードしました！");
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError("写真が見つかりません");
+          } else if (response.status === 410) {
+            setError("写真の有効期限が切れています");
+          } else {
+            setError("写真の取得に失敗しました");
+          }
+          return;
+        }
+
+        const data = await response.json();
+        setPhotoData(data);
+      } catch (err) {
+        console.error("Error fetching photo:", err);
+        setError("写真の取得に失敗しました");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPhoto();
+  }, [id]);
+
+  const handleDownload = async () => {
+    if (!photoData?.imageUrl) return;
+
+    try {
+      const response = await fetch(photoData.imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `tomodachi-cheki-${photoData.receiverName || "photo"}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download failed:", err);
+      alert("ダウンロードに失敗しました");
+    }
   };
+
 
   const handleShare = () => {
     // TODO: シェア機能の実装
