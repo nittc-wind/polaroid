@@ -1,11 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
-
-("use client");
-
 import * as React from "react";
 import { generateQRCode, generateQRCodeData } from "@/lib/util";
 import {
@@ -16,6 +10,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function QRPage({
   params,
