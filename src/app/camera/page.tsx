@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Camera } from "lucide-react";
@@ -17,6 +17,7 @@ export default function CameraPage() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [isStreamReady, setIsStreamReady] = useState(false);
 
   // カメラ起動
@@ -27,6 +28,7 @@ export default function CameraPage() {
       });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        streamRef.current = stream; // ストリームを保存
         setIsStreamReady(true);
       }
     } catch (err) {
@@ -34,6 +36,26 @@ export default function CameraPage() {
       alert("カメラの使用を許可してください");
     }
   };
+
+  // カメラ停止
+  const stopCamera = () => {
+    if (streamRef.current) {
+      // すべてのトラックを停止
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setIsStreamReady(false);
+  };
+
+  // コンポーネントがアンマウントされる時にカメラを停止
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
   // 撮影
   const capture = async () => {
     if (!videoRef.current || !canvasRef.current) return;
