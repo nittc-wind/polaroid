@@ -11,8 +11,9 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
-export default function ScanPage() {
+function ScanPage() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -93,5 +94,14 @@ export default function ScanPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+// スキャンページを認証ガードでラップ
+export default function ScanPageWithAuth() {
+  return (
+    <AuthGuard>
+      <ScanPage />
+    </AuthGuard>
   );
 }

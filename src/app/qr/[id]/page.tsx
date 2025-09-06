@@ -11,12 +11,9 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
-export default function QRPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+function QRPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
   const [qrCodeUrl, setQrCodeUrl] = React.useState<string>("");
 
@@ -83,5 +80,18 @@ export default function QRPage({
         </Card>
       </div>
     </div>
+  );
+}
+
+// QRページを認証ガードでラップ
+export default function QRPageWithAuth({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  return (
+    <AuthGuard>
+      <QRPage params={params} />
+    </AuthGuard>
   );
 }

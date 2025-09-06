@@ -28,7 +28,11 @@ interface PhotoData {
   createdAt: Date;
 }
 
-export default function Page({ params }: { params: Promise<{ id: string }> }) {
+export default function CompletePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const [photoData, setPhotoData] = useState<PhotoData | null>(null);
   const [loading, setLoading] = useState(true);

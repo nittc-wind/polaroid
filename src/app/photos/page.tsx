@@ -1,3 +1,5 @@
+"use client";
+
 import { Camera, Divide, ArrowLeft } from "lucide-react";
 import {
   Card,
@@ -10,8 +12,9 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
-export default function MemoriesPage() {
+function MemoriesPage() {
   return (
     <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
@@ -49,5 +52,14 @@ export default function MemoriesPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+// 写真一覧ページを認証ガードでラップ
+export default function PhotsPageWithAuth() {
+  return (
+    <AuthGuard>
+      <MemoriesPage />
+    </AuthGuard>
   );
 }
