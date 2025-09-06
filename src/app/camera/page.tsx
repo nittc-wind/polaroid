@@ -96,7 +96,7 @@ export default function CameraPage() {
     <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <Card className="bg-white rounded-2xl p-4 max-h-[90vh] flex flex-col">
-          <div className="flex items-center gap-2 mb-3">
+          <CardHeader className="p-0 mb-3 flex flex-row items-center gap-2">
             <Button variant="ghost" className="w-fit p-1">
               <Link
                 href="/"
@@ -106,12 +106,14 @@ export default function CameraPage() {
               </Link>
             </Button>
             <div>
-              <h1 className="text-[#0a0a0a] text-base font-medium">
+              <CardTitle className="text-[#0a0a0a] text-base font-medium">
                 写真を撮る
-              </h1>
-              <p className="text-[#737373] text-xs">カメラで撮影してください</p>
+              </CardTitle>
+              <CardDescription className="text-[#737373] text-xs">
+                カメラで撮影してください
+              </CardDescription>
             </div>
-          </div>
+          </CardHeader>
           <CardContent className="flex-1 p-0 flex flex-col">
             <div className="mb-4 flex-1">
               <video
@@ -127,7 +129,6 @@ export default function CameraPage() {
               />
               <canvas ref={canvasRef} style={{ display: "none" }} />
             </div>
-
             <div className="flex flex-col gap-3">
               {!isStreamReady ? (
                 <Button
