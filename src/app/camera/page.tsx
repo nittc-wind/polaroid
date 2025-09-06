@@ -41,7 +41,7 @@ export default function CameraPage() {
   const stopCamera = () => {
     if (streamRef.current) {
       // すべてのトラックを停止
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
     if (videoRef.current) {
