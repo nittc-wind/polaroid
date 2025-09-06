@@ -75,8 +75,8 @@ tags: ["feature", "api", "user-management", "crud", "profile", "authentication"]
 | TASK-011 | PATCH /api/users/[id]/password - パスワード変更API実装 | ✅        | 2025-09-06 |
 | TASK-012 | GET /api/users?search - ユーザー検索API実装            | ✅        | 2025-09-06 |
 | TASK-013 | GET /api/users/[id]/photos - ユーザー写真一覧API実装   | ✅        | 2025-09-06 |
-| TASK-014 | GET /api/users/[id]/stats - ユーザー統計情報API実装    |           |            |
-| TASK-015 | ページネーション機能の実装                             |           |            |
+| TASK-014 | GET /api/users/[id]/stats - ユーザー統計情報API実装    | ✅        | 2025-09-06 |
+| TASK-015 | ページネーション機能の実装                             | ✅        | 2025-09-06 |
 
 ### Implementation Phase 4: セキュリティ・最適化・テスト
 
