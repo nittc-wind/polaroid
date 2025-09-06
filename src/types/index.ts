@@ -61,3 +61,28 @@ export interface PhotoListItem {
 export interface GroupedPhotos {
   [date: string]: PhotoListItem[];
 }
+
+// User関連の型定義
+export interface User {
+  id: string;
+  email: string;
+  handle_name: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface UpdateUserRequest {
+  username?: string;
+  email?: string;
+}
+
+export interface UpdatePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface UserStatsResponse {
+  totalPhotos: number;
+  receivedPhotos: number;
+  unreceivedPhotos: number;
+}

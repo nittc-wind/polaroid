@@ -29,6 +29,11 @@ export function Navigation() {
                 マイフォト
               </Button>
             </Link>
+            <Link href="/settings">
+              <Button variant="outline" size="sm">
+                設定
+              </Button>
+            </Link>
             <Button variant="outline" size="sm" onClick={logout}>
               ログアウト
             </Button>

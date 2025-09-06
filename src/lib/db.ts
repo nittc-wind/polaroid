@@ -67,7 +67,7 @@ export async function createUser(data: {
 // ユーザー情報取得（ID指定）
 export async function getUserById(id: string) {
   const result = await sql`
-    SELECT id, email, handle_name, created_at, updated_at, email_verified, image
+    SELECT id, email, handle_name, created_at, updated_at
     FROM users 
     WHERE id = ${id}
     LIMIT 1
@@ -79,7 +79,7 @@ export async function getUserById(id: string) {
 // ユーザー情報取得（メールアドレス指定）
 export async function getUserByEmail(email: string) {
   const result = await sql`
-    SELECT id, email, password_hash, handle_name, created_at, updated_at, email_verified, image
+    SELECT id, email, password_hash, handle_name, created_at, updated_at
     FROM users 
     WHERE email = ${email}
     LIMIT 1
@@ -91,7 +91,7 @@ export async function getUserByEmail(email: string) {
 // ユーザー情報取得（パスワード含む）
 export async function getUserWithPassword(id: string) {
   const result = await sql`
-    SELECT id, email, password_hash, handle_name, created_at, updated_at, email_verified, image
+    SELECT id, email, password_hash, handle_name, created_at, updated_at
     FROM users 
     WHERE id = ${id}
     LIMIT 1
