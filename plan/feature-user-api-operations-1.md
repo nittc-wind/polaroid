@@ -58,25 +58,25 @@ tags: ["feature", "api", "user-management", "crud", "profile", "authentication"]
 
 - GOAL-002: ユーザーの基本的なCRUD操作APIの完成
 
-| Task     | Description                                     | Completed | Date |
-| -------- | ----------------------------------------------- | --------- | ---- |
-| TASK-006 | GET /api/users/[id] - ユーザー情報取得API実装   |           |      |
-| TASK-007 | GET /api/users/me - 現在ユーザー情報取得API実装 |           |      |
-| TASK-008 | PATCH /api/users/[id] - ユーザー情報更新API実装 |           |      |
-| TASK-009 | DELETE /api/users/[id] - ユーザー削除API実装    |           |      |
-| TASK-010 | 認可制御ロジックの実装（本人確認・管理者権限）  |           |      |
+| Task     | Description                                     | Completed | Date       |
+| -------- | ----------------------------------------------- | --------- | ---------- |
+| TASK-006 | GET /api/users/[id] - ユーザー情報取得API実装   | ✅        | 2025-09-06 |
+| TASK-007 | GET /api/users/me - 現在ユーザー情報取得API実装 | ✅        | 2025-09-06 |
+| TASK-008 | PATCH /api/users/[id] - ユーザー情報更新API実装 | ✅        | 2025-09-06 |
+| TASK-009 | DELETE /api/users/[id] - ユーザー削除API実装    | ✅        | 2025-09-06 |
+| TASK-010 | 認可制御ロジックの実装（本人確認・管理者権限）  | ✅        | 2025-09-06 |
 
 ### Implementation Phase 3: 拡張機能API実装
 
 - GOAL-003: パスワード管理と検索機能APIの実装
 
-| Task     | Description                                            | Completed | Date |
-| -------- | ------------------------------------------------------ | --------- | ---- |
-| TASK-011 | PATCH /api/users/[id]/password - パスワード変更API実装 |           |      |
-| TASK-012 | GET /api/users?search - ユーザー検索API実装            |           |      |
-| TASK-013 | GET /api/users/[id]/photos - ユーザー写真一覧API実装   |           |      |
-| TASK-014 | GET /api/users/[id]/stats - ユーザー統計情報API実装    |           |      |
-| TASK-015 | ページネーション機能の実装                             |           |      |
+| Task     | Description                                            | Completed | Date       |
+| -------- | ------------------------------------------------------ | --------- | ---------- |
+| TASK-011 | PATCH /api/users/[id]/password - パスワード変更API実装 | ✅        | 2025-09-06 |
+| TASK-012 | GET /api/users?search - ユーザー検索API実装            |           |            |
+| TASK-013 | GET /api/users/[id]/photos - ユーザー写真一覧API実装   |           |            |
+| TASK-014 | GET /api/users/[id]/stats - ユーザー統計情報API実装    |           |            |
+| TASK-015 | ページネーション機能の実装                             |           |            |
 
 ### Implementation Phase 4: セキュリティ・最適化・テスト
 
