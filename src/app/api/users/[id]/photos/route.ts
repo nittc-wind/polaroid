@@ -19,14 +19,16 @@ import { paginationSchema } from "@/lib/validation";
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    // パラメータを非同期で取得
+    const { id: userId } = await params;
+
     // 認証チェック
     const { error: authError, session } = await requireAuth();
     if (authError) return authError;
 
-    const userId = params.id;
     const currentUserId = session!.user.id;
 
     // 本人確認（写真は個人情報のため本人のみアクセス可能）

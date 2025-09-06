@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import bcrypt from "bcryptjs";
 import {
   requireAuth,
   requireSelfOrError,
@@ -7,42 +8,45 @@ import {
   parseRequestBody,
   ERROR_CODES,
 } from "@/lib/api-utils";
-import { getUserById, updateUserPassword } from "@/lib/db";
+import { getUserWithPassword, updateUserPassword } from "@/lib/db";
 import { changePasswordSchema } from "@/lib/validation";
-import bcrypt from "bcryptjs";
 
 /**
  * PATCH /api/users/[id]/password - パスワード変更API
  *
  * 認証: 必須
  * 権限: 本人のみ
- * セキュリティ: 現在のパスワード確認必須
+ * 機能: 現在のパスワード確認後、新パスワードに変更
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    // パラメータを非同期で取得
+    const { id: userId } = await params;
+
     // 認証チェック
     const { error: authError, session } = await requireAuth();
     if (authError) return authError;
 
-    const userId = params.id;
     const currentUserId = session!.user.id;
 
-    // 本人確認
+    // 本人確認（パスワード変更は本人のみ）
     const selfCheckError = requireSelfOrError(currentUserId, userId);
     if (selfCheckError) return selfCheckError;
 
     // リクエストボディのパースとバリデーション
-    const { data: passwordData, error: parseError } = await parseRequestBody(
+    const { data: bodyData, error: parseError } = await parseRequestBody(
       request,
       changePasswordSchema,
     );
     if (parseError) return parseError;
 
-    // ユーザー情報取得
-    const user = await getUserById(userId);
+    const { current_password, new_password } = bodyData;
+
+    // ユーザー存在確認（パスワード含む）
+    const user = await getUserWithPassword(userId);
     if (!user) {
       return createErrorResponse(
         ERROR_CODES.USER_NOT_FOUND,
@@ -53,10 +57,9 @@ export async function PATCH(
 
     // 現在のパスワード確認
     const isCurrentPasswordValid = await bcrypt.compare(
-      passwordData.current_password,
+      current_password,
       user.password_hash,
     );
-
     if (!isCurrentPasswordValid) {
       return createErrorResponse(
         ERROR_CODES.INVALID_PASSWORD,
@@ -65,23 +68,14 @@ export async function PATCH(
       );
     }
 
-    // 新しいパスワードをハッシュ化
-    const newPasswordHash = await bcrypt.hash(passwordData.new_password, 12);
+    // 新パスワードをハッシュ化
+    const hashedNewPassword = await bcrypt.hash(new_password, 12);
 
     // パスワード更新
-    const updatedUser = await updateUserPassword(userId, newPasswordHash);
-    if (!updatedUser) {
-      return createErrorResponse(
-        ERROR_CODES.INTERNAL_SERVER_ERROR,
-        "パスワードの更新に失敗しました",
-        500,
-      );
-    }
+    await updateUserPassword(userId, hashedNewPassword);
 
-    // 成功レスポンス（パスワード情報は含めない）
     return createSuccessResponse({
       message: "パスワードが正常に変更されました",
-      updated_at: updatedUser.updated_at,
     });
   } catch (error) {
     console.error("PATCH /api/users/[id]/password error:", error);

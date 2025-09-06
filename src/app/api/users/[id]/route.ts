@@ -7,27 +7,33 @@ import {
   parseRequestBody,
   ERROR_CODES,
 } from "@/lib/api-utils";
-import { getUserById, updateUser, getUserByEmail, deleteUser } from "@/lib/db";
-import { PublicUser, PrivateUser } from "@/types/api";
+import { getUserById, updateUser, deleteUser } from "@/lib/db";
 import { updateUserSchema } from "@/lib/validation";
 
 /**
- * GET /api/users/[id] - ユーザー情報取得API
+ * GET /api/users/[id] - 特定ユーザー情報取得API
  *
  * 認証: 必須
- * 権限: 本人・管理者は全情報、他ユーザーは公開情報のみ
+ * 権限: 本人のみ（将来的には他ユーザーも公開情報のみ取得可能に拡張可能）
+ * 機能: ユーザーの基本情報を返す（パスワードは除く）
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    // パラメータを非同期で取得
+    const { id: userId } = await params;
+
     // 認証チェック
     const { error: authError, session } = await requireAuth();
     if (authError) return authError;
 
-    const userId = params.id;
     const currentUserId = session!.user.id;
+
+    // 本人確認（現在は本人のみアクセス可能）
+    const selfCheckError = requireSelfOrError(currentUserId, userId);
+    if (selfCheckError) return selfCheckError;
 
     // ユーザー情報取得
     const user = await getUserById(userId);
@@ -39,29 +45,7 @@ export async function GET(
       );
     }
 
-    // 本人または管理者の場合：完全な情報を返却
-    if (currentUserId === userId) {
-      const privateUser: PrivateUser = {
-        id: user.id,
-        email: user.email,
-        handle_name: user.handle_name,
-        image: user.image,
-        created_at: user.created_at,
-        updated_at: user.updated_at,
-      };
-
-      return createSuccessResponse(privateUser);
-    }
-
-    // 他ユーザーの場合：公開情報のみ返却
-    const publicUser: PublicUser = {
-      id: user.id,
-      handle_name: user.handle_name,
-      image: user.image,
-      created_at: user.created_at,
-    };
-
-    return createSuccessResponse(publicUser);
+    return createSuccessResponse(user);
   } catch (error) {
     console.error("GET /api/users/[id] error:", error);
     return createErrorResponse(
@@ -77,17 +61,20 @@ export async function GET(
  *
  * 認証: 必須
  * 権限: 本人のみ
+ * 機能: メールアドレス、ハンドルネーム、プロフィール画像を更新
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    // パラメータを非同期で取得
+    const { id: userId } = await params;
+
     // 認証チェック
     const { error: authError, session } = await requireAuth();
     if (authError) return authError;
 
-    const userId = params.id;
     const currentUserId = session!.user.id;
 
     // 本人確認
@@ -95,27 +82,15 @@ export async function PATCH(
     if (selfCheckError) return selfCheckError;
 
     // リクエストボディのパースとバリデーション
-    const { data: updateData, error: parseError } = await parseRequestBody(
+    const { data: bodyData, error: parseError } = await parseRequestBody(
       request,
       updateUserSchema,
     );
     if (parseError) return parseError;
 
-    // メールアドレス重複チェック（メールアドレスが更新される場合）
-    if (updateData.email) {
-      const existingUser = await getUserByEmail(updateData.email);
-      if (existingUser && existingUser.id !== userId) {
-        return createErrorResponse(
-          ERROR_CODES.EMAIL_ALREADY_EXISTS,
-          "このメールアドレスは既に使用されています",
-          409,
-        );
-      }
-    }
-
-    // ユーザー情報更新
-    const updatedUser = await updateUser(userId, updateData);
-    if (!updatedUser) {
+    // ユーザー存在確認
+    const existingUser = await getUserById(userId);
+    if (!existingUser) {
       return createErrorResponse(
         ERROR_CODES.USER_NOT_FOUND,
         "指定されたユーザーが見つかりません",
@@ -123,18 +98,17 @@ export async function PATCH(
       );
     }
 
-    // 更新後の完全なユーザー情報を返却
-    const privateUser: PrivateUser = {
-      id: updatedUser.id,
-      email: updatedUser.email,
-      handle_name: updatedUser.handle_name,
-      image: updatedUser.image,
-      created_at: updatedUser.created_at,
-      updated_at: updatedUser.updated_at,
-      email_verified: updatedUser.email_verified,
-    };
+    // ユーザー情報更新
+    const updatedUser = await updateUser(userId, bodyData);
+    if (!updatedUser) {
+      return createErrorResponse(
+        ERROR_CODES.INTERNAL_SERVER_ERROR,
+        "ユーザー情報の更新に失敗しました",
+        500,
+      );
+    }
 
-    return createSuccessResponse(privateUser);
+    return createSuccessResponse(updatedUser);
   } catch (error) {
     console.error("PATCH /api/users/[id] error:", error);
     return createErrorResponse(
@@ -146,30 +120,33 @@ export async function PATCH(
 }
 
 /**
- * DELETE /api/users/[id] - ユーザー削除API
+ * DELETE /api/users/[id] - ユーザーアカウント削除API
  *
  * 認証: 必須
- * 権限: 本人または管理者（現在は本人のみ実装）
+ * 権限: 本人のみ
+ * 機能: ユーザーアカウントを削除（現在は物理削除、将来的にソフトデリート検討）
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    // パラメータを非同期で取得
+    const { id: userId } = await params;
+
     // 認証チェック
     const { error: authError, session } = await requireAuth();
     if (authError) return authError;
 
-    const userId = params.id;
     const currentUserId = session!.user.id;
 
-    // 本人確認（管理者権限は将来的に実装）
+    // 本人確認
     const selfCheckError = requireSelfOrError(currentUserId, userId);
     if (selfCheckError) return selfCheckError;
 
     // ユーザー存在確認
-    const user = await getUserById(userId);
-    if (!user) {
+    const existingUser = await getUserById(userId);
+    if (!existingUser) {
       return createErrorResponse(
         ERROR_CODES.USER_NOT_FOUND,
         "指定されたユーザーが見つかりません",
@@ -177,26 +154,25 @@ export async function DELETE(
       );
     }
 
-    // ユーザー削除（ソフトデリート）
+    // ユーザーアカウント削除
     const deletedUser = await deleteUser(userId);
     if (!deletedUser) {
       return createErrorResponse(
         ERROR_CODES.INTERNAL_SERVER_ERROR,
-        "ユーザーの削除に失敗しました",
+        "ユーザーアカウントの削除に失敗しました",
         500,
       );
     }
 
-    // 削除成功レスポンス
     return createSuccessResponse({
-      message: "ユーザーが正常に削除されました",
-      deleted_user_id: userId,
+      message: "ユーザーアカウントが正常に削除されました",
+      deleted_user: deletedUser,
     });
   } catch (error) {
     console.error("DELETE /api/users/[id] error:", error);
     return createErrorResponse(
       ERROR_CODES.INTERNAL_SERVER_ERROR,
-      "ユーザーの削除に失敗しました",
+      "ユーザーアカウントの削除に失敗しました",
       500,
     );
   }
