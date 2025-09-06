@@ -23,16 +23,12 @@ export default function HomePage() {
           </div>
 
           <div className="flex flex-col gap-6">
-            <Button className="button">
-              <Link href="/camera" className="block">
-                写真を撮る
-              </Link>
+            <Button className="button" asChild>
+              <Link href="/camera">写真を撮る</Link>
             </Button>
 
-            <Button className="button">
-              <Link href="/photos" className="block">
-                思い出
-              </Link>
+            <Button className="button" asChild>
+              <Link href="/photos">思い出</Link>
             </Button>
           </div>
         </Card>

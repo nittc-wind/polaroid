@@ -18,7 +18,7 @@ export default function MemoriesPage() {
         <Card className="card">
           <CardContent className="card-body">
             <div>
-              <Button variant="ghost">
+              <Button variant="ghost" asChild>
                 <Link
                   href="/"
                   className="flex items-center text-[#737373] hover:text-[#0a0a0a] text-sm"

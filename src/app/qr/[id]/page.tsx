@@ -43,7 +43,7 @@ export default function QRPage({
             <p className="text-sm text-[#737373]">
               相手は標準カメラでQRを読み取ってください
             </p>
-            <Button variant="ghost" className="w-full">
+            <Button variant="ghost" className="w-full" asChild>
               <Link
                 href="/camera"
                 className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
@@ -51,7 +51,7 @@ export default function QRPage({
                 もう一度撮影する
               </Link>
             </Button>
-            <Button variant="ghost" className="w-full">
+            <Button variant="ghost" className="w-full" asChild>
               <Link
                 href="/photos"
                 className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
@@ -59,7 +59,7 @@ export default function QRPage({
                 写真一覧を見る
               </Link>
             </Button>
-            <Button variant="ghost" className="w-full">
+            <Button variant="ghost" className="w-full" asChild>
               <Link
                 href="/"
                 className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
