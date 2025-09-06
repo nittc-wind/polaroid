@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 
 import { Download, Share, ImageIcon } from "lucide-react";
 
-
 interface PhotoData {
   id: string;
   imageUrl: string;
@@ -77,68 +76,32 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
     }
   };
 
-
   const handleShare = () => {
     // TODO: シェア機能の実装
     if (navigator.share) {
       navigator.share({
-        title: 'ともだちチェキ',
-        text: '友達との思い出をチェキで残しました！',
-        url: window.location.href
+        title: "ともだちチェキ",
+        text: "友達との思い出をチェキで残しました！",
+        url: window.location.href,
       });
     } else {
       // フォールバック: URLをクリップボードにコピー
       navigator.clipboard.writeText(window.location.href);
-      alert('URLをクリップボードにコピーしました！');
-    }
-  };
-
-  const handleShare = () => {
-    // TODO: シェア機能の実装
-    if (navigator.share) {
-      navigator.share({
-        title: 'ともだちチェキ',
-        text: '友達との思い出をチェキで残しました！',
-        url: window.location.href
-      });
-    } else {
-      // フォールバック: URLをクリップボードにコピー
-      navigator.clipboard.writeText(window.location.href);
-      alert('URLをクリップボードにコピーしました！');
+      alert("URLをクリップボードにコピーしました！");
     }
   };
 
   return (
     <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
       <div className="bg-[#ffffff] rounded-3xl p-8 w-full max-w-sm mx-auto shadow-lg">
-        <h1 className="text-[#603636] text-xl font-medium mb-8 text-center">現像が完了しました！</h1>
+        <h1 className="text-[#603636] text-xl font-medium mb-8 text-center">
+          現像が完了しました！
+        </h1>
 
-<<<<<<< HEAD
-      <div>
-        {/* チェキ風の写真表示 */}
-        <div
-          style={{
-            width: "320px",
-            padding: "10px",
-            border: "1px solid #ccc",
-            backgroundColor: "white",
-          }}
-        >
-          {photoData?.imageUrl ?<Image
-            src={photoData.imageUrl}
-            alt="完成した写真"
-            width={300}
-            height={300}
-            style={{ width: "100%", height: "auto" }}
-          />:<p>画像が読み込めませんでした</p>}
-          <div style={{ marginTop: "10px", minHeight: "50px" }}>
-            <p>2024.09.02 - Nagoya</p>
-          </div>
-=======
         <div className="bg-[#e5e5e5] rounded-2xl aspect-[4/5] flex items-center justify-center mb-6 relative overflow-hidden">
-          {photoUrl ? (
+          {photoData?.imageUrl ? (
             <Image
-              src={photoUrl}
+              src={photoData.imageUrl}
               alt="完成した写真"
               fill
               className="object-cover"
@@ -161,11 +124,10 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
               </svg>
             </div>
           )}
->>>>>>> f85289f (wip:completeもどす)
         </div>
 
         <div className="flex flex-row gap-3 mb-6">
-          <Button 
+          <Button
             onClick={handleDownload}
             className="flex-1 bg-[#603636] hover:bg-[#603636]/90 text-white rounded-xl py-3"
           >
@@ -182,17 +144,26 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
 
         <div className="text-center space-y-3">
           <div>
-            <h2 className="text-[#603636] text-base font-medium mb-1">ともだちチェキを使ってみませんか？</h2>
-            <p className="text-[#737373] text-xs">あなたも友達との思い出を特別な形で残しましょう！</p>
+            <h2 className="text-[#603636] text-base font-medium mb-1">
+              ともだちチェキを使ってみませんか？
+            </h2>
+            <p className="text-[#737373] text-xs">
+              あなたも友達との思い出を特別な形で残しましょう！
+            </p>
           </div>
-          
-          <Button variant="ghost" className="w-full text-[#603636] hover:bg-[#603636]/5">
+
+          <Button
+            variant="ghost"
+            className="w-full text-[#603636] hover:bg-[#603636]/5"
+          >
             <Link href="/" className="w-full block">
               アプリを使ってみる
             </Link>
           </Button>
 
-          <p className="text-[#737373] text-xs">※ この写真は24時間後に自動的に削除されます</p>
+          <p className="text-[#737373] text-xs">
+            ※ この写真は24時間後に自動的に削除されます
+          </p>
         </div>
       </div>
     </div>
