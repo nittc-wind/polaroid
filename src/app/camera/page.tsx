@@ -98,12 +98,17 @@ export default function CameraPage() {
         <Card className="bg-white rounded-2xl p-4 max-h-[90vh] flex flex-col">
           <div className="flex items-center gap-2 mb-3">
             <Button variant="ghost" className="w-fit p-1">
-              <Link href="/" className="flex items-center text-[#737373] hover:text-[#0a0a0a]">
+              <Link
+                href="/"
+                className="flex items-center text-[#737373] hover:text-[#0a0a0a]"
+              >
                 <ArrowLeft className="w-4 h-4" />
               </Link>
             </Button>
             <div>
-              <h1 className="text-[#0a0a0a] text-base font-medium">写真を撮る</h1>
+              <h1 className="text-[#0a0a0a] text-base font-medium">
+                写真を撮る
+              </h1>
               <p className="text-[#737373] text-xs">カメラで撮影してください</p>
             </div>
           </div>
@@ -114,19 +119,29 @@ export default function CameraPage() {
                 autoPlay
                 playsInline
                 className="w-full rounded-lg"
-                style={{ maxWidth: "100%", aspectRatio: "4/3", maxHeight: "40vh" }}
+                style={{
+                  maxWidth: "100%",
+                  aspectRatio: "4/3",
+                  maxHeight: "40vh",
+                }}
               />
               <canvas ref={canvasRef} style={{ display: "none" }} />
             </div>
 
             <div className="flex flex-col gap-3">
               {!isStreamReady ? (
-                <Button onClick={startCamera} className="w-full bg-[#603736] hover:bg-[#331515] text-white py-3">
+                <Button
+                  onClick={startCamera}
+                  className="w-full bg-[#603736] hover:bg-[#331515] text-white py-3"
+                >
                   <Camera className="w-4 h-4 mr-2" />
                   カメラを起動
                 </Button>
               ) : (
-                <Button onClick={capture} className="w-full bg-[#603736] hover:bg-[#331515] text-white py-3">
+                <Button
+                  onClick={capture}
+                  className="w-full bg-[#603736] hover:bg-[#331515] text-white py-3"
+                >
                   <Camera className="w-4 h-4 mr-2" />
                   撮影する
                 </Button>

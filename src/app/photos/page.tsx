@@ -18,12 +18,17 @@ export default function MemoriesPage() {
         <Card className="bg-white rounded-2xl p-4 max-h-[90vh] flex flex-col">
           <div className="flex items-center gap-2 mb-3">
             <Button className="w-fit p-1" variant="ghost">
-              <Link href="/" className="flex items-center text-[#737373] hover:text-[#0a0a0a]">
+              <Link
+                href="/"
+                className="flex items-center text-[#737373] hover:text-[#0a0a0a]"
+              >
                 <ArrowLeft className="w-4 h-4" />
               </Link>
             </Button>
             <div>
-              <h1 className="text-[#0a0a0a] text-base font-medium">思い出一覧</h1>
+              <h1 className="text-[#0a0a0a] text-base font-medium">
+                思い出一覧
+              </h1>
               <p className="text-[#737373] text-xs">写真を見返す</p>
             </div>
           </div>

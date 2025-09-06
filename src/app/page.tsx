@@ -17,7 +17,9 @@ export default function HomePage() {
         <Card className="bg-white rounded-2xl p-6 max-h-[85vh] flex flex-col">
           <div className="flex-1 flex flex-col justify-center">
             <div className="text-center mb-6">
-              <h2 className="text-[#331515] text-xl font-medium mb-2">ともだちチェキ</h2>
+              <h2 className="text-[#331515] text-xl font-medium mb-2">
+                ともだちチェキ
+              </h2>
               <p className="text-[#737373] text-sm">新しい名刺交換の形</p>
             </div>
 

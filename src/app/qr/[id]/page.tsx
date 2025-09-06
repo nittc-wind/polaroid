@@ -37,7 +37,11 @@ export default function QRPage({
           <CardContent className="flex-1 flex flex-col items-center gap-4 p-0">
             <div className="flex-1 flex items-center justify-center">
               {qrCodeUrl ? (
-                <img src={qrCodeUrl} alt="QRコード" className="w-40 h-40 max-w-[60vw] max-h-[30vh]" />
+                <img
+                  src={qrCodeUrl}
+                  alt="QRコード"
+                  className="w-40 h-40 max-w-[60vw] max-h-[30vh]"
+                />
               ) : (
                 <div className="w-40 h-40 bg-gray-200 animate-pulse rounded" />
               )}
@@ -47,17 +51,26 @@ export default function QRPage({
             </p>
             <div className="w-full space-y-2">
               <Button variant="ghost" className="w-full py-2">
-                <Link href="/camera" className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm">
+                <Link
+                  href="/camera"
+                  className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
+                >
                   もう一度撮影する
                 </Link>
               </Button>
               <Button variant="ghost" className="w-full py-2">
-                <Link href="/photos" className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm">
+                <Link
+                  href="/photos"
+                  className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
+                >
                   写真一覧を見る
                 </Link>
               </Button>
               <Button variant="ghost" className="w-full py-2">
-                <Link href="/" className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm">
+                <Link
+                  href="/"
+                  className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
+                >
                   ホームに戻る
                 </Link>
               </Button>

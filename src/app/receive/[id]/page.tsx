@@ -92,8 +92,12 @@ export default function ReceivePage({
       <div className="w-full max-w-sm">
         <div className="bg-white rounded-2xl p-4 max-h-[90vh] overflow-y-auto">
           <div className="mb-3">
-            <h1 className="text-base font-medium text-[#0a0a0a] mb-1">写真を受け取る</h1>
-            <p className="text-xs text-[#737373]">あなたの情報を入力してください</p>
+            <h1 className="text-base font-medium text-[#0a0a0a] mb-1">
+              写真を受け取る
+            </h1>
+            <p className="text-xs text-[#737373]">
+              あなたの情報を入力してください
+            </p>
           </div>
 
           <form onSubmit={handleSubmit}>
