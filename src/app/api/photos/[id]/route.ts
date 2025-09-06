@@ -31,6 +31,7 @@ export async function GET(
 
     return NextResponse.json({
       id: photo.id,
+      userId: photo.user_id,
       imageUrl: photo.image_url,
       receiverName: photo.receiver_name,
       receivedAt: photo.received_at,

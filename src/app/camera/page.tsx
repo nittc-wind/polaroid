@@ -11,7 +11,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Camera, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { generateUserId } from "@/lib/util";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 
 function CameraPage() {
@@ -95,13 +94,8 @@ function CameraPage() {
           const formData = new FormData();
           formData.append("image", file);
 
-          const deviceId = generateUserId();
-
           const res = await fetch("/api/photos", {
             method: "POST",
-            headers: {
-              "x-device-id": deviceId,
-            },
             body: formData,
           });
 
