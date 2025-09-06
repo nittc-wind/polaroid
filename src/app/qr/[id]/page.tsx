@@ -1,10 +1,20 @@
 "use client";
 
-import * as React from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-// ...existing code...
+import Link from "next/link";
+
+("use client");
+
+import * as React from "react";
 import { generateQRCode, generateQRCodeData } from "@/lib/util";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -26,47 +36,55 @@ export default function QRPage({
   }, [id]);
 
   return (
-    <div className="container min-h-screen flex items-center justify-center bg-[#fafafa]">
-      <div className="inner w-full max-w-md mx-auto">
-        <Card className="card">
-          <CardHeader>
-            <CardTitle className="text-lg">
+    <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        <Card className="bg-white rounded-2xl p-4 max-h-[90vh] flex flex-col">
+          <CardHeader className="p-0 mb-3 text-center">
+            <CardTitle className="text-base font-medium text-[#0a0a0a]">
               QRコードを相手に見せてください
             </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-6">
-            {qrCodeUrl ? (
-              <img src={qrCodeUrl} alt="QRコード" className="w-48 h-48" />
-            ) : (
-              <div className="w-48 h-48 bg-gray-200 animate-pulse rounded" />
-            )}
-            <p className="text-sm text-[#737373]">
+            <CardDescription className="text-[#737373] text-xs">
               相手は標準カメラでQRを読み取ってください
-            </p>
-            <Button variant="ghost" className="w-full" asChild>
-              <Link
-                href="/camera"
-                className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
-              >
-                もう一度撮影する
-              </Link>
-            </Button>
-            <Button variant="ghost" className="w-full" asChild>
-              <Link
-                href="/photos"
-                className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
-              >
-                写真一覧を見る
-              </Link>
-            </Button>
-            <Button variant="ghost" className="w-full" asChild>
-              <Link
-                href="/"
-                className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
-              >
-                ホームに戻る
-              </Link>
-            </Button>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1 flex flex-col items-center gap-4 p-0">
+            <div className="flex-1 flex items-center justify-center">
+              {qrCodeUrl ? (
+                <img
+                  src={qrCodeUrl}
+                  alt="QRコード"
+                  className="w-40 h-40 max-w-[60vw] max-h-[30vh]"
+                />
+              ) : (
+                <div className="w-40 h-40 bg-gray-200 animate-pulse rounded" />
+              )}
+            </div>
+            <div className="w-full space-y-2">
+              <Button variant="ghost" className="w-full py-2">
+                <Link
+                  href="/camera"
+                  className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
+                >
+                  もう一度撮影する
+                </Link>
+              </Button>
+              <Button variant="ghost" className="w-full py-2">
+                <Link
+                  href="/photos"
+                  className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
+                >
+                  写真一覧を見る
+                </Link>
+              </Button>
+              <Button variant="ghost" className="w-full py-2">
+                <Link
+                  href="/"
+                  className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
+                >
+                  ホームに戻る
+                </Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
