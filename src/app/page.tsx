@@ -25,12 +25,18 @@ export default function HomePage() {
           </CardHeader>
           <CardContent className="flex-1 flex flex-col justify-center p-0">
             <div className="flex gap-3">
-              <Button className="flex-1 bg-[#603736] hover:bg-[#331515] text-white py-2 text-sm">
+              <Button
+                className="flex-1 bg-[#603736] hover:bg-[#331515] text-white py-2 text-sm"
+                asChild
+              >
                 <Link href="/camera" className="block w-full">
                   写真を撮る
                 </Link>
               </Button>
-              <Button className="flex-1 bg-[#603736] hover:bg-[#331515] text-white py-2 text-sm">
+              <Button
+                className="flex-1 bg-[#603736] hover:bg-[#331515] text-white py-2 text-sm"
+                asChild
+              >
                 <Link href="/photos" className="block w-full">
                   思い出
                 </Link>

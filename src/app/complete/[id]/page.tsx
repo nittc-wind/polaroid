@@ -165,6 +165,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
               <Button
                 variant="ghost"
                 className="w-full text-[#603636] hover:bg-[#603636]/5"
+                asChild
               >
                 <Link href="/" className="w-full block">
                   アプリを使ってみる
