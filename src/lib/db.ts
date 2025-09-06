@@ -7,6 +7,7 @@ export const sql = neon(process.env.DATABASE_URL!);
 export interface Photo {
   id: string;
   device_id: string;
+  user_id: string | null;
   image_url: string;
   created_at: Date;
   expires_at: Date;
@@ -35,6 +36,7 @@ export interface User {
 // ヘルパー関数
 export async function createPhoto(data: {
   device_id: string;
+  user_id?: string | null;
   image_url: string;
   expires_at?: Date;
 }) {
@@ -42,8 +44,8 @@ export async function createPhoto(data: {
     data.expires_at || new Date(Date.now() + 24 * 60 * 60 * 1000);
 
   const result = await sql`
-    INSERT INTO photos (device_id, image_url, expires_at)
-    VALUES (${data.device_id}, ${data.image_url}, ${expires_at})
+    INSERT INTO photos (device_id, user_id, image_url, expires_at)
+    VALUES (${data.device_id}, ${data.user_id || null}, ${data.image_url}, ${expires_at})
     RETURNING *
   `;
 
