@@ -1,20 +1,41 @@
 "use client";
 
-import { Camera, Divide, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { PhotoGrid } from "@/components/PhotoGrid";
+import { useUserPhotos } from "@/hooks/useUserPhotos";
 
 function MemoriesPage() {
+  const { photos, loading, error, hasMore, loadMore, refresh } =
+    useUserPhotos();
+
+  const handlePhotoClick = (photo: {
+    id: string;
+    image_url: string;
+    created_at: Date;
+    expires_at: Date;
+    is_received: boolean;
+    receiver_name?: string;
+    received_at?: Date;
+    location?: {
+      latitude: number;
+      longitude: number;
+      address?: string;
+    };
+  }) => {
+    // TODO: 写真詳細画面への遷移を実装
+    console.log("Photo clicked:", photo);
+  };
+
   return (
     <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
@@ -33,21 +54,20 @@ function MemoriesPage() {
                 思い出一覧
               </CardTitle>
               <CardDescription className="text-[#737373] text-xs">
-                写真を見返す
+                撮影した写真を見返す
               </CardDescription>
             </div>
           </CardHeader>
-          <CardContent className="flex-1 p-0">
-            <div className="grid grid-cols-3 gap-2 flex-1 overflow-y-auto">
-              {Array.from({ length: 9 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="bg-[#e5e5e5] rounded-lg aspect-square flex items-center justify-center hover:bg-[#d9d9d9] transition-colors cursor-pointer"
-                >
-                  <Camera className="w-4 h-4 text-[#737373]" />
-                </div>
-              ))}
-            </div>
+          <CardContent className="flex-1 p-0 overflow-y-auto">
+            <PhotoGrid
+              photos={photos}
+              loading={loading}
+              error={error}
+              hasMore={hasMore}
+              onLoadMore={loadMore}
+              onRefresh={refresh}
+              onPhotoClick={handlePhotoClick}
+            />
           </CardContent>
         </Card>
       </div>

@@ -69,7 +69,7 @@ export async function createUser(data: {
 // ユーザー情報取得（ID指定）
 export async function getUserById(id: string) {
   const result = await sql`
-    SELECT id, email, handle_name, created_at, updated_at, email_verified, image
+    SELECT id, email, handle_name, created_at, updated_at
     FROM users 
     WHERE id = ${id}
     LIMIT 1
