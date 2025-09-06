@@ -16,7 +16,6 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 export default function QRPage({
   params,
