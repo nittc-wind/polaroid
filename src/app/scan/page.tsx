@@ -80,7 +80,7 @@ export default function ScanPage() {
               )}
             </div>
             <div className="w-full mt-2">
-              <Button variant="ghost" className="w-full py-2">
+              <Button variant="ghost" className="w-full py-2" asChild>
                 <Link
                   href="/"
                   className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"

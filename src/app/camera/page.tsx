@@ -133,7 +133,7 @@ export default function CameraPage() {
       <div className="w-full max-w-sm">
         <Card className="bg-white rounded-2xl p-4 max-h-[90vh] flex flex-col">
           <CardHeader className="p-0 mb-3 flex flex-row items-center gap-2">
-            <Button variant="ghost" className="w-fit p-1">
+            <Button variant="ghost" className="w-fit p-1" asChild>
               <Link
                 href="/"
                 className="flex items-center text-[#737373] hover:text-[#0a0a0a]"
