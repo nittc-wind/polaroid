@@ -12,8 +12,9 @@ import Link from "next/link";
 import { ArrowLeft, Camera, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { generateUserId } from "@/lib/util";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
-export default function CameraPage() {
+function CameraPage() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -225,3 +226,14 @@ export default function CameraPage() {
     </div>
   );
 }
+
+// カメラページを認証ガードでラップ
+function CameraPageWithAuth() {
+  return (
+    <AuthGuard>
+      <CameraPage />
+    </AuthGuard>
+  );
+}
+
+export default CameraPageWithAuth;

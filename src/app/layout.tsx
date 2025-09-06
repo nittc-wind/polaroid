@@ -1,6 +1,8 @@
 import "@/app/globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Providers } from "@/components/Providers";
+import { Navigation } from "@/components/Navigation";
 
 export const metadata: Metadata = {
   title: "ともだちチェキ",
@@ -15,16 +17,26 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body>
-        <header className="text-[#fff] bg-[#603636]">
-          <Link href="/">ともだちチェキ</Link>
-        </header>
-        <main>{children}</main>
-        <footer>
-          <p>&copy; 2024 ともだちチェキ</p>
-          <Link href="/receive/sample-id">開発用</Link>
-          <Link href="/develop/sample-id">開発用2</Link>
-          <Link href="/complete/sample-id">開発用3</Link>
-        </footer>
+        <Providers>
+          <header className="border-b">
+            <Navigation />
+          </header>
+          <main>{children}</main>
+          <footer className="border-t p-4 text-center text-sm text-gray-600">
+            <p>&copy; 2024 ともだちチェキ</p>
+            <div className="mt-2 space-x-4">
+              <Link href="/receive/sample-id" className="hover:underline">
+                開発用
+              </Link>
+              <Link href="/develop/sample-id" className="hover:underline">
+                開発用2
+              </Link>
+              <Link href="/complete/sample-id" className="hover:underline">
+                開発用3
+              </Link>
+            </div>
+          </footer>
+        </Providers>
       </body>
     </html>
   );
