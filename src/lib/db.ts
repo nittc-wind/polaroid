@@ -20,6 +20,18 @@ export interface Photo {
   } | null;
 }
 
+// User型定義（NextAuth対応）
+export interface User {
+  id: string;
+  email: string;
+  password_hash: string;
+  handle_name: string;
+  created_at: Date;
+  updated_at: Date;
+  email_verified?: Date | null;
+  image?: string | null;
+}
+
 // ヘルパー関数
 export async function createPhoto(data: {
   device_id: string;
@@ -36,6 +48,237 @@ export async function createPhoto(data: {
   `;
 
   return result[0] as Photo;
+}
+
+// 最低限のユーザー作成関数（insertのみ、バリデーション・認証なし）
+export async function createUser(data: {
+  email: string;
+  password_hash: string;
+  handle_name: string;
+}) {
+  const result = await sql`
+    INSERT INTO users (email, password_hash, handle_name)
+    VALUES (${data.email}, ${data.password_hash}, ${data.handle_name})
+    RETURNING *
+  `;
+  return result[0] as User;
+}
+
+// ユーザー情報取得（ID指定）
+export async function getUserById(id: string) {
+  const result = await sql`
+    SELECT id, email, handle_name, created_at, updated_at, email_verified, image
+    FROM users 
+    WHERE id = ${id}
+    LIMIT 1
+  `;
+
+  return result[0] as User | undefined;
+}
+
+// ユーザー情報取得（メールアドレス指定）
+export async function getUserByEmail(email: string) {
+  const result = await sql`
+    SELECT id, email, password_hash, handle_name, created_at, updated_at, email_verified, image
+    FROM users 
+    WHERE email = ${email}
+    LIMIT 1
+  `;
+
+  return result[0] as User | undefined;
+}
+
+// ユーザー情報更新
+export async function updateUser(
+  id: string,
+  data: Partial<Pick<User, "email" | "handle_name" | "image">>,
+) {
+  // 動的にクエリを構築
+  if (data.email && data.handle_name) {
+    const result = await sql`
+      UPDATE users 
+      SET 
+        email = ${data.email},
+        handle_name = ${data.handle_name},
+        updated_at = NOW()
+      WHERE id = ${id}
+      RETURNING id, email, handle_name, created_at, updated_at, email_verified, image
+    `;
+    return result[0] as User | undefined;
+  } else if (data.email) {
+    const result = await sql`
+      UPDATE users 
+      SET 
+        email = ${data.email},
+        updated_at = NOW()
+      WHERE id = ${id}
+      RETURNING id, email, handle_name, created_at, updated_at, email_verified, image
+    `;
+    return result[0] as User | undefined;
+  } else if (data.handle_name) {
+    const result = await sql`
+      UPDATE users 
+      SET 
+        handle_name = ${data.handle_name},
+        updated_at = NOW()
+      WHERE id = ${id}
+      RETURNING id, email, handle_name, created_at, updated_at, email_verified, image
+    `;
+    return result[0] as User | undefined;
+  } else if (data.image !== undefined) {
+    const result = await sql`
+      UPDATE users 
+      SET 
+        image = ${data.image},
+        updated_at = NOW()
+      WHERE id = ${id}
+      RETURNING id, email, handle_name, created_at, updated_at, email_verified, image
+    `;
+    return result[0] as User | undefined;
+  }
+
+  return undefined;
+}
+
+// パスワード更新
+export async function updateUserPassword(id: string, password_hash: string) {
+  const result = await sql`
+    UPDATE users 
+    SET 
+      password_hash = ${password_hash},
+      updated_at = NOW()
+    WHERE id = ${id}
+    RETURNING id, email, handle_name, created_at, updated_at
+  `;
+
+  return result[0] as User | undefined;
+}
+
+// ユーザー削除（ソフトデリート）
+export async function deleteUser(id: string) {
+  // まずは物理削除として実装（後でソフトデリートに変更可能）
+  const result = await sql`
+    DELETE FROM users 
+    WHERE id = ${id}
+    RETURNING id
+  `;
+
+  return result.length > 0;
+}
+
+// ユーザー検索
+export async function searchUsers(
+  query?: string,
+  page: number = 1,
+  limit: number = 20,
+) {
+  const offset = (page - 1) * limit;
+
+  if (query) {
+    // 検索クエリありの場合
+    const countResult = await sql`
+      SELECT COUNT(*) as count 
+      FROM users 
+      WHERE handle_name ILIKE ${`%${query}%`}
+    `;
+    const total = parseInt(countResult[0].count);
+
+    const users = await sql`
+      SELECT id, email, handle_name, created_at, updated_at, image
+      FROM users 
+      WHERE handle_name ILIKE ${`%${query}%`}
+      ORDER BY created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+
+    return {
+      users: users as User[],
+      total,
+      page,
+      limit,
+      total_pages: Math.ceil(total / limit),
+    };
+  } else {
+    // 全ユーザー取得の場合
+    const countResult = await sql`
+      SELECT COUNT(*) as count FROM users
+    `;
+    const total = parseInt(countResult[0].count);
+
+    const users = await sql`
+      SELECT id, email, handle_name, created_at, updated_at, image
+      FROM users 
+      ORDER BY created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+
+    return {
+      users: users as User[],
+      total,
+      page,
+      limit,
+      total_pages: Math.ceil(total / limit),
+    };
+  }
+}
+
+// ユーザー統計情報取得
+export async function getUserStats(userId: string) {
+  const stats = await sql`
+    SELECT 
+      COUNT(CASE WHEN user_id = ${userId} THEN 1 END) as total_photos,
+      COUNT(CASE WHEN user_id = ${userId} AND is_received = true THEN 1 END) as received_photos,
+      COUNT(CASE WHEN user_id = ${userId} AND is_received = false AND expires_at > NOW() THEN 1 END) as active_photos,
+      (SELECT created_at FROM users WHERE id = ${userId}) as join_date,
+      (SELECT MAX(created_at) FROM photos WHERE user_id = ${userId}) as last_activity
+    FROM photos
+  `;
+
+  if (stats.length === 0) {
+    return null;
+  }
+
+  return {
+    total_photos: parseInt(stats[0].total_photos) || 0,
+    received_photos: parseInt(stats[0].received_photos) || 0,
+    active_photos: parseInt(stats[0].active_photos) || 0,
+    join_date: stats[0].join_date,
+    last_activity: stats[0].last_activity,
+  };
+}
+
+// ユーザーの写真一覧取得
+export async function getUserPhotos(
+  userId: string,
+  page: number = 1,
+  limit: number = 20,
+) {
+  const offset = (page - 1) * limit;
+
+  // 総件数取得
+  const countResult = await sql`
+    SELECT COUNT(*) as count 
+    FROM photos 
+    WHERE user_id = ${userId}
+  `;
+  const total = parseInt(countResult[0].count);
+
+  // データ取得
+  const photos = await sql`
+    SELECT * 
+    FROM photos 
+    WHERE user_id = ${userId}
+    ORDER BY created_at DESC
+    LIMIT ${limit} OFFSET ${offset}
+  `;
+
+  return {
+    photos: photos as Photo[],
+    total,
+    page,
+    limit,
+    total_pages: Math.ceil(total / limit),
+  };
 }
 
 export async function getPhoto(id: string) {
