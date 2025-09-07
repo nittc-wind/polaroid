@@ -9,6 +9,7 @@ export interface Photo {
   device_id: string;
   user_id: string | null;
   image_url: string;
+  storage_path: string | null; // Supabase Storage内のファイルパス
   created_at: Date;
   expires_at: Date;
   is_received: boolean;
@@ -38,14 +39,15 @@ export async function createPhoto(data: {
   device_id: string;
   user_id?: string | null;
   image_url: string;
+  storage_path?: string | null; // Supabase Storage用
   expires_at?: Date;
 }) {
   const expires_at =
     data.expires_at || new Date(Date.now() + 24 * 60 * 60 * 1000);
 
   const result = await sql`
-    INSERT INTO photos (device_id, user_id, image_url, expires_at)
-    VALUES (${data.device_id}, ${data.user_id || null}, ${data.image_url}, ${expires_at})
+    INSERT INTO photos (device_id, user_id, image_url, storage_path, expires_at)
+    VALUES (${data.device_id}, ${data.user_id || null}, ${data.image_url}, ${data.storage_path || null}, ${expires_at})
     RETURNING *
   `;
 
