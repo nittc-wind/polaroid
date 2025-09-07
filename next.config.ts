@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   images: {
     domains: [
       "mmceupg1lfzrhi4n.public.blob.vercel-storage.com",
-      "uvlpszptmegmljauzsry.storage.supabase.co",
+      "uvlpszptmegmljauzsry.supabase.co", // Supabase Storage ドメイン
     ],
   },
 };
