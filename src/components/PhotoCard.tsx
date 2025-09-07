@@ -1,13 +1,14 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import Image from "next/image";
-import { Check, Clock, X, MapPin } from "lucide-react";
+import { Check, Clock, X, MapPin, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Photo {
   id: string;
   image_url: string;
+  storage_path?: string; // Supabase Storage用パス
   created_at: Date;
   expires_at: Date;
   is_received: boolean;
@@ -31,8 +32,18 @@ export const PhotoCard = memo(function PhotoCard({
   onClick,
   className,
 }: PhotoCardProps) {
+  const [imageError, setImageError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+
   const isExpired = new Date() > photo.expires_at;
   const handleClick = () => onClick?.(photo);
+
+  // 画像URL決定ロジック
+  const getImageUrl = () => {
+    // Supabase Storageの場合は、APIから取得した署名付きURLを使用
+    // APIレスポンスで既に適切なURLが設定されているはず
+    return photo.image_url;
+  };
 
   // 状態の判定
   const getStatus = () => {
@@ -76,15 +87,43 @@ export const PhotoCard = memo(function PhotoCard({
       onClick={handleClick}
     >
       {/* 写真画像 */}
-      <div className="relative aspect-square">
-        <Image
-          src={photo.image_url}
-          alt={`撮影日: ${photo.created_at.toLocaleDateString()}`}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-          loading="lazy"
-        />
+      <div className="relative aspect-square bg-gray-100">
+        {!imageError ? (
+          <Image
+            src={getImageUrl()}
+            alt={`撮影日: ${photo.created_at.toLocaleDateString()}`}
+            fill
+            className={cn(
+              "object-cover transition-opacity duration-300",
+              imageLoading ? "opacity-0" : "opacity-100",
+            )}
+            sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+            loading="lazy"
+            onLoad={() => setImageLoading(false)}
+            onError={() => {
+              setImageError(true);
+              setImageLoading(false);
+            }}
+          />
+        ) : (
+          // 画像読み込みエラー時のフォールバック
+          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+            <div className="text-center text-gray-500">
+              <ImageIcon className="w-8 h-8 mx-auto mb-2" />
+              <p className="text-xs">画像を読み込めません</p>
+              {photo.storage_path && (
+                <p className="text-xs mt-1">Supabase Storage</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ローディング状態 */}
+        {imageLoading && !imageError && (
+          <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
+            <div className="text-gray-400 text-xs">読み込み中...</div>
+          </div>
+        )}
 
         {/* ステータスオーバーレイ */}
         <div className="absolute top-1 right-1">

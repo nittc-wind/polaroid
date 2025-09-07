@@ -21,6 +21,7 @@ function MemoriesPage() {
   const handlePhotoClick = (photo: {
     id: string;
     image_url: string;
+    storage_path?: string;
     created_at: Date;
     expires_at: Date;
     is_received: boolean;
