@@ -37,46 +37,46 @@ tags: ["migration", "storage", "security", "supabase", "nextjs"]
 
 - GOAL-001: Supabaseプロジェクト作成とStorage設定
 
-| Task         | Description                                                | Completed | Date |
-| ------------ | ---------------------------------------------------------- | --------- | ---- |
-| TASK-001     | Supabaseプロジェクト作成とAPIキー取得                      |           |      |
-| TASK-002     | 環境変数の設定 (.env.local)                                |           |      |
-| TASK-003     | Supabaseクライアント用ライブラリのインストール             |           |      |
-| TASK-004     | プライベートストレージバケット `photos` の作成             |           |      |
-| ~~TASK-005~~ | ~~RLSポリシーの設定 (ユーザー認証とオーナーアクセス制御)~~ | 削除済み  | -    |
+| Task         | Description                                                | Completed | Date       |
+| ------------ | ---------------------------------------------------------- | --------- | ---------- |
+| TASK-001     | Supabaseプロジェクト作成とAPIキー取得                      | ✅        | 2025-09-07 |
+| TASK-002     | 環境変数の設定 (.env.local) - STORAGE\_\* prefix追加       | ✅        | 2025-09-07 |
+| TASK-003     | Supabaseクライアント用ライブラリのインストール             | ✅        | 2025-09-07 |
+| TASK-004     | プライベートストレージバケット `photos` の作成             | ✅        | 2025-09-07 |
+| ~~TASK-005~~ | ~~RLSポリシーの設定 (ユーザー認証とオーナーアクセス制御)~~ | 削除済み  | -          |
 
 ### Implementation Phase 2: Supabaseクライアント実装
 
 - GOAL-002: Next.js向けSupabaseクライアント設定 (Service Role Key使用)
 
-| Task         | Description                                        | Completed | Date |
-| ------------ | -------------------------------------------------- | --------- | ---- |
-| TASK-006     | Server Component用Supabaseクライアント実装         |           |      |
-| ~~TASK-007~~ | ~~Client Component用Supabaseクライアント実装~~     | 削除済み  | -    |
-| ~~TASK-008~~ | ~~ミドルウェアでのSupabaseセッション管理実装~~     | 削除済み  | -    |
-| ~~TASK-009~~ | ~~NextAuthとSupabaseの認証統合ユーティリティ作成~~ | 削除済み  | -    |
+| Task         | Description                                        | Completed | Date       |
+| ------------ | -------------------------------------------------- | --------- | ---------- |
+| TASK-006     | Server Component用Supabaseクライアント実装         | ✅        | 2025-09-07 |
+| ~~TASK-007~~ | ~~Client Component用Supabaseクライアント実装~~     | 削除済み  | -          |
+| ~~TASK-008~~ | ~~ミドルウェアでのSupabaseセッション管理実装~~     | 削除済み  | -          |
+| ~~TASK-009~~ | ~~NextAuthとSupabaseの認証統合ユーティリティ作成~~ | 削除済み  | -          |
 
 ### Implementation Phase 3: ストレージユーティリティ実装
 
 - GOAL-003: ファイルアップロード・アクセス機能の実装
 
-| Task     | Description                                    | Completed | Date |
-| -------- | ---------------------------------------------- | --------- | ---- |
-| TASK-010 | ファイルアップロード用ユーティリティ関数の実装 |           |      |
-| TASK-011 | 署名付きURL生成ユーティリティの実装            |           |      |
-| TASK-012 | ファイル削除ユーティリティの実装               |           |      |
-| TASK-013 | ファイルバリデーション機能の強化               |           |      |
+| Task     | Description                                    | Completed | Date       |
+| -------- | ---------------------------------------------- | --------- | ---------- |
+| TASK-010 | ファイルアップロード用ユーティリティ関数の実装 | ✅        | 2025-09-07 |
+| TASK-011 | 署名付きURL生成ユーティリティの実装            | ✅        | 2025-09-07 |
+| TASK-012 | ファイル削除ユーティリティの実装               | ✅        | 2025-09-07 |
+| TASK-013 | ファイルバリデーション機能の強化               | ✅        | 2025-09-07 |
 
 ### Implementation Phase 4: API Routes更新
 
 - GOAL-004: 既存のVercel Blob APIをSupabase Storageに置き換え
 
-| Task     | Description                                   | Completed | Date |
-| -------- | --------------------------------------------- | --------- | ---- |
-| TASK-014 | `/api/photos/route.ts` のSupabase Storage対応 |           |      |
-| TASK-015 | `/api/photos/[id]/route.ts` の署名付きURL対応 |           |      |
-| TASK-016 | QR受け取り用APIの画像アクセス機能更新         |           |      |
-| TASK-017 | エラーハンドリングとレスポンス構造の統一      |           |      |
+| Task     | Description                                   | Completed | Date       |
+| -------- | --------------------------------------------- | --------- | ---------- |
+| TASK-014 | `/api/photos/route.ts` のSupabase Storage対応 | ✅        | 2025-09-07 |
+| TASK-015 | `/api/photos/[id]/route.ts` の署名付きURL対応 | ✅        | 2025-09-07 |
+| TASK-016 | QR受け取り用APIの画像アクセス機能更新         | ✅        | 2025-09-07 |
+| TASK-017 | エラーハンドリングとレスポンス構造の統一      | ✅        | 2025-09-07 |
 
 ### Implementation Phase 5: フロントエンド更新
 
@@ -125,6 +125,9 @@ tags: ["migration", "storage", "security", "supabase", "nextjs"]
 - **FILE-007**: `src/components/PhotoCard.tsx` - 画像表示コンポーネント更新
 - ~~**FILE-008**: `middleware.ts` - ルートレベルミドルウェア更新~~ (削除済み)
 - **FILE-009**: `.env.local` - Supabase環境変数追加
+  - `STORAGE_NEXT_PUBLIC_SUPABASE_URL` - Supabase プロジェクトURL
+  - `STORAGE_SUPABASE_SERVICE_ROLE_KEY` - Service Role Key (RLSバイパス用)
+  - `STORAGE_NEXT_PUBLIC_SUPABASE_ANON_KEY` - 匿名キー (将来的なRLS実装用)
 
 ## 6. Testing
 
