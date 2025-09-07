@@ -39,6 +39,23 @@ export default function CompletePage({
   const [photoData, setPhotoData] = useState<PhotoData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [imageLoadError, setImageLoadError] = useState<string | null>(null);
+
+  // 画像の直接テスト用関数
+  const testImageUrl = async (url: string) => {
+    try {
+      const response = await fetch(url, { method: "HEAD" });
+      console.log(`Image URL test for ${url}:`, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
+      });
+      return response.ok;
+    } catch (error) {
+      console.error(`Image URL test failed for ${url}:`, error);
+      return false;
+    }
+  };
 
   useEffect(() => {
     const fetchPhoto = async () => {
@@ -84,6 +101,37 @@ export default function CompletePage({
 
         console.log("Photo data about to set:", result.data); // デバッグ用ログ
         console.log("Photo imageUrl:", result.data.imageUrl); // デバッグ用ログ
+
+        // 画像URLをテスト
+        if (result.data.imageUrl) {
+          console.log("Testing image URL accessibility...");
+          const isAccessible = await testImageUrl(result.data.imageUrl);
+          console.log("Image URL accessible:", isAccessible);
+
+          if (!isAccessible) {
+            console.warn(
+              "Image URL is not accessible, this may cause display issues",
+            );
+          }
+        }
+
+        // ストレージパスのテスト
+        if (result.data.storagePath) {
+          console.log("Testing storage path:", result.data.storagePath);
+          // ストレージの直接テストを実行
+          try {
+            const storageTest = await fetch("/api/test/storage", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ path: result.data.storagePath }),
+            });
+            const storageResult = await storageTest.json();
+            console.log("Storage test result:", storageResult);
+          } catch (error) {
+            console.error("Storage test failed:", error);
+          }
+        }
+
         setPhotoData(result.data);
       } catch (err) {
         console.error("Error fetching photo:", err);
@@ -193,13 +241,45 @@ export default function CompletePage({
               </div>
             ) : (
               <div className="bg-[#e5e5e5] rounded-2xl aspect-[4/5] flex items-center justify-center mb-6 relative overflow-hidden w-full">
-                {photoData?.imageUrl ? (
+                {imageLoadError ? (
+                  <div className="absolute inset-0 bg-red-50 border border-red-200 rounded-2xl flex flex-col items-center justify-center p-4">
+                    <div className="text-red-800 text-xs text-center mb-2">
+                      {imageLoadError}
+                    </div>
+                    <Button
+                      onClick={() => {
+                        setImageLoadError(null);
+                        if (photoData?.imageUrl) {
+                          testImageUrl(photoData.imageUrl);
+                        }
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="text-red-800 border-red-200 hover:bg-red-100 text-xs"
+                    >
+                      URL再テスト
+                    </Button>
+                  </div>
+                ) : photoData?.imageUrl ? (
                   <Image
                     src={photoData.imageUrl}
                     alt="完成した写真"
                     fill
                     className="object-cover"
-                    onError={() => setError("画像の読み込みに失敗しました")}
+                    onError={(e) => {
+                      console.error("Image load error:", e);
+                      console.error("Failed image URL:", photoData.imageUrl);
+                      setImageLoadError(
+                        "画像の読み込みに失敗しました。URLに問題がある可能性があります。",
+                      );
+                    }}
+                    onLoad={() => {
+                      console.log(
+                        "Image loaded successfully:",
+                        photoData.imageUrl,
+                      );
+                      setImageLoadError(null);
+                    }}
                   />
                 ) : (
                   <div className="w-16 h-16 flex items-center justify-center">
