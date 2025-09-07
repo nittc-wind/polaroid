@@ -149,16 +149,25 @@ function CameraPage() {
             <div className="mb-4 flex-1">
               {isPhotoTaken ? (
                 <div
-                  className="w-full rounded-lg bg-white flex items-center justify-center"
+                  className="flex flex-col items-center justify-center bg-white rounded-[20px] shadow-xl border border-gray-100 py-6 px-4 w-full mx-auto cheki-card"
                   style={{
-                    maxWidth: "100%",
-                    aspectRatio: "4/3",
-                    maxHeight: "40vh",
+                    aspectRatio: "3/4",
+                    maxWidth: "340px",
+                    margin: "0 auto",
                   }}
                 >
-                  <div className="text-[#737373] text-sm">
-                    QRコードを生成しています...
+                  <div className="flex-1 flex items-center justify-center w-full">
+                    <div
+                      className="bg-white rounded-[12px] shadow-lg overflow-hidden flex items-center justify-center w-full"
+                      style={{ aspectRatio: "1/1", maxWidth: "220px" }}
+                    >
+                      <div className="text-[#737373] text-sm">
+                        QRコードを生成しています...
+                      </div>
+                    </div>
                   </div>
+                  {/* 下余白（チェキ風） */}
+                  <div className="w-full h-8" />
                 </div>
               ) : (
                 <video
