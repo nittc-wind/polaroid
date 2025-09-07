@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { receivePhoto } from "@/lib/db";
+import { getPhotoSignedUrl } from "@/lib/supabase/storage";
 
 export async function POST(
   request: NextRequest,
@@ -47,9 +48,34 @@ export async function POST(
       );
     }
 
+    // Supabase Storage用の署名付きURL生成
+    let imageUrl = updatedPhoto.image_url; // デフォルト（既存データ用）
+
+    if (updatedPhoto.storage_path) {
+      // Supabase Storageパスが存在する場合は署名付きURLを生成
+      const signedUrlResult = await getPhotoSignedUrl(
+        updatedPhoto.storage_path,
+        7200,
+      ); // 2時間有効（受け取り後の閲覧用）
+
+      if (signedUrlResult.success) {
+        imageUrl = signedUrlResult.data!.signedUrl;
+      } else {
+        console.error(
+          "Failed to generate signed URL for received photo:",
+          signedUrlResult.error,
+        );
+        // エラーの場合は既存のimage_urlを使用（フォールバック）
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      photo: updatedPhoto,
+      photo: {
+        ...updatedPhoto,
+        imageUrl, // 署名付きURLまたは既存URL
+        storagePath: updatedPhoto.storage_path, // フロントエンド用
+      },
     });
   } catch (error) {
     console.error("Photo receive error:", error);
