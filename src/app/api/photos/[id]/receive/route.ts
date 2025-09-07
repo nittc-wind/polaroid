@@ -79,11 +79,14 @@ export async function POST(
     }
 
     return createSuccessResponse({
-      photo: {
-        ...updatedPhoto,
-        imageUrl, // 署名付きURLまたは既存URL
-        storagePath: updatedPhoto.storage_path, // フロントエンド用
-      },
+      id: updatedPhoto.id,
+      userId: updatedPhoto.user_id,
+      imageUrl, // 署名付きURLまたは既存URL
+      storagePath: updatedPhoto.storage_path, // camelCaseに統一
+      receiverName: updatedPhoto.receiver_name,
+      receivedAt: updatedPhoto.received_at,
+      location: updatedPhoto.location,
+      createdAt: updatedPhoto.created_at,
     });
   } catch (error) {
     return handleApiError(error);

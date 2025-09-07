@@ -68,7 +68,7 @@ export async function GET(
       id: photo.id,
       userId: photo.user_id,
       imageUrl,
-      storagePath: photo.storage_path, // フロントエンド用
+      storagePath: photo.storage_path, // camelCaseに統一
       receiverName: photo.receiver_name,
       receivedAt: photo.received_at,
       location: photo.location,

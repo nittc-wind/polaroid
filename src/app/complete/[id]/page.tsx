@@ -17,16 +17,17 @@ import { Download, Share, ImageIcon } from "lucide-react";
 
 interface PhotoData {
   id: string;
+  userId: string;
   imageUrl: string; // Supabaseの署名付きURL
-  storage_path?: string; // Supabaseストレージパス
+  storagePath?: string; // Supabaseストレージパス（camelCase）
   receiverName: string | null;
-  receivedAt: Date | null;
+  receivedAt: string | null; // ISO date string
   location: {
     latitude: number;
     longitude: number;
     address?: string;
   } | null;
-  createdAt: Date;
+  createdAt: string; // ISO date string
 }
 
 export default function CompletePage({
@@ -71,11 +72,18 @@ export default function CompletePage({
 
         // 新しい成功レスポンス形式に対応
         const result = await response.json();
+        console.log("API Response:", result); // デバッグ用ログ
+        console.log("Response success:", result.success); // デバッグ用ログ
+        console.log("Response data:", result.data); // デバッグ用ログ
+
         if (!result.success || !result.data) {
+          console.error("Response structure error:", result); // デバッグ用ログ
           setError("サーバーのレスポンスが不正です");
           return;
         }
 
+        console.log("Photo data about to set:", result.data); // デバッグ用ログ
+        console.log("Photo imageUrl:", result.data.imageUrl); // デバッグ用ログ
         setPhotoData(result.data);
       } catch (err) {
         console.error("Error fetching photo:", err);
