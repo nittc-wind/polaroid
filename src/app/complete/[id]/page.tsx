@@ -17,7 +17,8 @@ import { Download, Share, ImageIcon } from "lucide-react";
 
 interface PhotoData {
   id: string;
-  imageUrl: string;
+  imageUrl: string; // Supabaseの署名付きURL
+  storage_path?: string; // Supabaseストレージパス
   receiverName: string | null;
   receivedAt: Date | null;
   location: {
@@ -44,21 +45,41 @@ export default function CompletePage({
         const response = await fetch(`/api/photos/${id}`);
 
         if (!response.ok) {
-          if (response.status === 404) {
-            setError("写真が見つかりません");
-          } else if (response.status === 410) {
-            setError("写真の有効期限が切れています");
-          } else {
-            setError("写真の取得に失敗しました");
+          // 新しいエラーレスポンス形式に対応
+          try {
+            const errorData = await response.json();
+            if (response.status === 404) {
+              setError("写真が見つかりません");
+            } else if (response.status === 410) {
+              setError("写真の有効期限が切れています");
+            } else if (errorData.error?.message) {
+              setError(`写真の取得に失敗しました: ${errorData.error.message}`);
+            } else {
+              setError("写真の取得に失敗しました");
+            }
+          } catch {
+            if (response.status === 404) {
+              setError("写真が見つかりません");
+            } else if (response.status === 410) {
+              setError("写真の有効期限が切れています");
+            } else {
+              setError("写真の取得に失敗しました");
+            }
           }
           return;
         }
 
-        const data = await response.json();
-        setPhotoData(data);
+        // 新しい成功レスポンス形式に対応
+        const result = await response.json();
+        if (!result.success || !result.data) {
+          setError("サーバーのレスポンスが不正です");
+          return;
+        }
+
+        setPhotoData(result.data);
       } catch (err) {
         console.error("Error fetching photo:", err);
-        setError("写真の取得に失敗しました");
+        setError("写真の取得中にエラーが発生しました");
       } finally {
         setLoading(false);
       }
@@ -68,10 +89,18 @@ export default function CompletePage({
   }, [id]);
 
   const handleDownload = async () => {
-    if (!photoData?.imageUrl) return;
+    if (!photoData?.imageUrl) {
+      alert("ダウンロードできる画像がありません");
+      return;
+    }
 
     try {
+      // Supabaseの署名付きURLから画像をダウンロード
       const response = await fetch(photoData.imageUrl);
+      if (!response.ok) {
+        throw new Error("画像の取得に失敗しました");
+      }
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -83,7 +112,7 @@ export default function CompletePage({
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Download failed:", err);
-      alert("ダウンロードに失敗しました");
+      alert("ダウンロードに失敗しました。再度お試しください。");
     }
   };
 
@@ -115,15 +144,8 @@ export default function CompletePage({
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center p-0">
-            <div className="bg-[#e5e5e5] rounded-2xl aspect-[4/5] flex items-center justify-center mb-6 relative overflow-hidden w-full">
-              {photoData?.imageUrl ? (
-                <Image
-                  src={photoData.imageUrl}
-                  alt="完成した写真"
-                  fill
-                  className="object-cover"
-                />
-              ) : (
+            {loading ? (
+              <div className="bg-[#e5e5e5] rounded-2xl aspect-[4/5] flex items-center justify-center mb-6 relative overflow-hidden w-full">
                 <div className="w-16 h-16 flex items-center justify-center">
                   <svg
                     width="48"
@@ -134,25 +156,76 @@ export default function CompletePage({
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    className="animate-pulse"
                   >
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                     <circle cx="9" cy="9" r="2" />
                     <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
                   </svg>
                 </div>
-              )}
-            </div>
+              </div>
+            ) : error ? (
+              <div className="bg-red-50 border border-red-200 rounded-2xl aspect-[4/5] flex flex-col items-center justify-center mb-6 w-full p-4">
+                <div className="text-red-800 text-sm text-center mb-2">
+                  {error}
+                </div>
+                <Button
+                  onClick={() => {
+                    setError(null);
+                    setLoading(true);
+                    // 再取得処理をトリガー
+                    window.location.reload();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="text-red-800 border-red-200 hover:bg-red-100"
+                >
+                  再試行
+                </Button>
+              </div>
+            ) : (
+              <div className="bg-[#e5e5e5] rounded-2xl aspect-[4/5] flex items-center justify-center mb-6 relative overflow-hidden w-full">
+                {photoData?.imageUrl ? (
+                  <Image
+                    src={photoData.imageUrl}
+                    alt="完成した写真"
+                    fill
+                    className="object-cover"
+                    onError={() => setError("画像の読み込みに失敗しました")}
+                  />
+                ) : (
+                  <div className="w-16 h-16 flex items-center justify-center">
+                    <svg
+                      width="48"
+                      height="48"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#737373"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <circle cx="9" cy="9" r="2" />
+                      <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+            )}
             <div className="flex flex-row gap-3 mb-6 w-full">
               <Button
                 onClick={handleDownload}
-                className="flex-1 bg-[#603636] hover:bg-[#603636]/90 text-white rounded-xl py-3"
+                disabled={loading || error !== null || !photoData?.imageUrl}
+                className="flex-1 bg-[#603636] hover:bg-[#603636]/90 text-white rounded-xl py-3 disabled:opacity-50"
               >
                 保存する
               </Button>
               <Button
                 onClick={handleShare}
+                disabled={loading || error !== null}
                 variant="outline"
-                className="flex-1 border-[#603636] text-[#603636] hover:bg-[#603636]/5 rounded-xl py-3 bg-transparent"
+                className="flex-1 border-[#603636] text-[#603636] hover:bg-[#603636]/5 rounded-xl py-3 bg-transparent disabled:opacity-50"
               >
                 シェアする
               </Button>

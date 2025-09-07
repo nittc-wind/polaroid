@@ -65,16 +65,31 @@ export default function ReceivePage({
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        alert(errorData.error || "写真の受け取りに失敗しました");
+        // 新しいエラーレスポンス形式に対応
+        try {
+          const errorData = await response.json();
+          if (errorData.error?.message) {
+            alert(`写真の受け取りに失敗しました: ${errorData.error.message}`);
+          } else {
+            alert("写真の受け取りに失敗しました");
+          }
+        } catch {
+          alert("写真の受け取りに失敗しました");
+        }
         return;
       }
 
+      // 新しい成功レスポンス形式に対応
       const result = await response.json();
+      if (!result.success) {
+        alert("写真の受け取りに失敗しました");
+        return;
+      }
+
       console.log("受け取り成功:", result);
     } catch (error) {
       console.error("API呼び出しエラー:", error);
-      alert("写真の受け取りに失敗しました");
+      alert("写真の受け取り中にエラーが発生しました");
       return;
     }
 

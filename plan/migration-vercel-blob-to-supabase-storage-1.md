@@ -82,12 +82,12 @@ tags: ["migration", "storage", "security", "supabase", "nextjs"]
 
 - GOAL-005: UI/UXのSupabase Storage対応
 
-| Task     | Description                               | Completed | Date |
-| -------- | ----------------------------------------- | --------- | ---- |
-| TASK-018 | PhotoCard コンポーネントの署名付きURL対応 |           |      |
-| TASK-019 | カメラ機能のアップロード処理更新          |           |      |
-| TASK-020 | 受け取り機能の画像表示処理更新            |           |      |
-| TASK-021 | エラー表示とローディング状態の改善        |           |      |
+| Task     | Description                               | Completed | Date       |
+| -------- | ----------------------------------------- | --------- | ---------- |
+| TASK-018 | PhotoCard コンポーネントの署名付きURL対応 | ✅        | 2025-09-07 |
+| TASK-019 | カメラ機能のアップロード処理更新          | ✅        | 2025-09-07 |
+| TASK-020 | 受け取り機能の画像表示処理更新            | ✅        | 2025-09-07 |
+| TASK-021 | エラー表示とローディング状態の改善        |           |            |
 
 ### Implementation Phase 6: テストと移行
 
