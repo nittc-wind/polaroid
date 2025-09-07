@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2 } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -24,14 +25,19 @@ export default function ReceivePage({
   const router = useRouter();
   const [name, setName] = useState("");
   const [locationPermission, setLocationPermission] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
     if (!name.trim()) {
-      alert("名前を入力してください");
+      setError("名前を入力してください");
       return;
     }
+
+    setIsSubmitting(true);
 
     // 位置情報を取得
     let locationData = null;
@@ -69,12 +75,14 @@ export default function ReceivePage({
         try {
           const errorData = await response.json();
           if (errorData.error?.message) {
-            alert(`写真の受け取りに失敗しました: ${errorData.error.message}`);
+            setError(
+              `写真の受け取りに失敗しました: ${errorData.error.message}`,
+            );
           } else {
-            alert("写真の受け取りに失敗しました");
+            setError("写真の受け取りに失敗しました");
           }
         } catch {
-          alert("写真の受け取りに失敗しました");
+          setError("写真の受け取りに失敗しました");
         }
         return;
       }
@@ -82,19 +90,20 @@ export default function ReceivePage({
       // 新しい成功レスポンス形式に対応
       const result = await response.json();
       if (!result.success) {
-        alert("写真の受け取りに失敗しました");
+        setError("写真の受け取りに失敗しました");
         return;
       }
 
       console.log("受け取り成功:", result);
+
+      // 現像画面へ遷移
+      router.push(`/develop/${id}`);
     } catch (error) {
       console.error("API呼び出しエラー:", error);
-      alert("写真の受け取り中にエラーが発生しました");
-      return;
+      setError("写真の受け取り中にエラーが発生しました");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // 現像画面へ遷移
-    router.push(`/develop/${id}`);
   };
 
   const requestLocationPermission = async () => {
@@ -103,9 +112,9 @@ export default function ReceivePage({
         navigator.geolocation.getCurrentPosition(resolve, reject);
       });
       setLocationPermission(true);
-      alert("位置情報の使用を許可しました");
+      setError("位置情報の使用を許可しました");
     } catch {
-      alert("位置情報の使用を許可してください");
+      setError("位置情報の使用を許可してください");
     }
   };
 
@@ -122,6 +131,21 @@ export default function ReceivePage({
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
+            {/* エラー表示 */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                <div className="text-red-800 text-sm">{error}</div>
+                <Button
+                  onClick={() => setError(null)}
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 text-red-800 border-red-200 hover:bg-red-100"
+                >
+                  閉じる
+                </Button>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit}>
               <div className="border border-[#e5e5e5] rounded-lg p-4 mb-6">
                 <h3 className="text-sm font-medium text-[#0a0a0a] mb-4">
@@ -156,15 +180,24 @@ export default function ReceivePage({
                   <Button
                     variant="outline"
                     className="flex-1 bg-transparent"
+                    disabled={isSubmitting}
                     asChild
                   >
                     <Link href="/">キャンセル</Link>
                   </Button>
                   <Button
                     type="submit"
-                    className="flex-1 bg-[#603736] hover:bg-[#331515] text-white py-2"
+                    disabled={isSubmitting}
+                    className="flex-1 bg-[#603736] hover:bg-[#331515] text-white py-2 disabled:opacity-50"
                   >
-                    現像を開始
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        処理中...
+                      </>
+                    ) : (
+                      "現像を開始"
+                    )}
                   </Button>
                 </div>
               </div>
