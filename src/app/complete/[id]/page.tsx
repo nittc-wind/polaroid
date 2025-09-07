@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { use } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -261,11 +260,10 @@ export default function CompletePage({
                     </Button>
                   </div>
                 ) : photoData?.imageUrl ? (
-                  <Image
+                  <img
                     src={photoData.imageUrl}
                     alt="完成した写真"
-                    fill
-                    className="object-cover"
+                    className="w-full h-full object-cover"
                     onError={(e) => {
                       console.error("Image load error:", e);
                       console.error("Failed image URL:", photoData.imageUrl);
