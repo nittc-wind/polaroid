@@ -12,7 +12,9 @@ tags: ["migration", "storage", "security", "supabase", "nextjs"]
 
 ![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
 
-現在のVercel Blobストレージは認証機能がなく、顔写真のような機密性の高いデータを扱うには不適切です。Supabase Storageに移行することで、認証付きファイルアクセス、Row Level Security (RLS)、署名付きURLによる安全なファイル共有を実現します。
+現在のVercel Blobストレージは認証機能がなく、顔写真のような機密性の高いデータを扱うには不適切です。Supabase Storageに移行することで、プライベートストレージによる認証付きファイルアクセス、署名付きURLによる安全なファイル共有を実現します。
+
+**Note**: ハッカソンレベルの要件に合わせて、RLS関連の複雑な要件は一旦削除済み。Service Role Keyを使用したシンプルなアクセス制御で実装します。
 
 ## 1. Requirements & Constraints
 
@@ -26,8 +28,8 @@ tags: ["migration", "storage", "security", "supabase", "nextjs"]
 - **SEC-003**: ファイルアップロード時のバリデーション強化
 - **CON-001**: 現在のVercel Blob実装を段階的に置き換え
 - **CON-002**: NextAuthセッション管理を継続使用
-- **GUD-001**: Supabase RLSポリシーでアクセス制御を実装
-- **PAT-001**: プライベートバケット + 署名付きURLパターンを使用
+- ~~**GUD-001**: Supabase RLSポリシーでアクセス制御を実装~~ (削除済み - ハッカソンレベル簡素化)
+- **PAT-001**: プライベートバケット + Service Role Key + 署名付きURLパターンを使用
 
 ## 2. Implementation Steps
 
@@ -35,24 +37,24 @@ tags: ["migration", "storage", "security", "supabase", "nextjs"]
 
 - GOAL-001: Supabaseプロジェクト作成とStorage設定
 
-| Task     | Description                                            | Completed | Date |
-| -------- | ------------------------------------------------------ | --------- | ---- |
-| TASK-001 | Supabaseプロジェクト作成とAPIキー取得                  |           |      |
-| TASK-002 | 環境変数の設定 (.env.local)                            |           |      |
-| TASK-003 | Supabaseクライアント用ライブラリのインストール         |           |      |
-| TASK-004 | プライベートストレージバケット `photos` の作成         |           |      |
-| TASK-005 | RLSポリシーの設定 (ユーザー認証とオーナーアクセス制御) |           |      |
+| Task         | Description                                                | Completed | Date |
+| ------------ | ---------------------------------------------------------- | --------- | ---- |
+| TASK-001     | Supabaseプロジェクト作成とAPIキー取得                      |           |      |
+| TASK-002     | 環境変数の設定 (.env.local)                                |           |      |
+| TASK-003     | Supabaseクライアント用ライブラリのインストール             |           |      |
+| TASK-004     | プライベートストレージバケット `photos` の作成             |           |      |
+| ~~TASK-005~~ | ~~RLSポリシーの設定 (ユーザー認証とオーナーアクセス制御)~~ | 削除済み  | -    |
 
 ### Implementation Phase 2: Supabaseクライアント実装
 
-- GOAL-002: Next.js向けSupabaseクライアント設定
+- GOAL-002: Next.js向けSupabaseクライアント設定 (Service Role Key使用)
 
-| Task     | Description                                    | Completed | Date |
-| -------- | ---------------------------------------------- | --------- | ---- |
-| TASK-006 | Server Component用Supabaseクライアント実装     |           |      |
-| TASK-007 | Client Component用Supabaseクライアント実装     |           |      |
-| TASK-008 | ミドルウェアでのSupabaseセッション管理実装     |           |      |
-| TASK-009 | NextAuthとSupabaseの認証統合ユーティリティ作成 |           |      |
+| Task         | Description                                        | Completed | Date |
+| ------------ | -------------------------------------------------- | --------- | ---- |
+| TASK-006     | Server Component用Supabaseクライアント実装         |           |      |
+| ~~TASK-007~~ | ~~Client Component用Supabaseクライアント実装~~     | 削除済み  | -    |
+| ~~TASK-008~~ | ~~ミドルウェアでのSupabaseセッション管理実装~~     | 削除済み  | -    |
+| ~~TASK-009~~ | ~~NextAuthとSupabaseの認証統合ユーティリティ作成~~ | 削除済み  | -    |
 
 ### Implementation Phase 3: ストレージユーティリティ実装
 
@@ -107,40 +109,40 @@ tags: ["migration", "storage", "security", "supabase", "nextjs"]
 
 ## 4. Dependencies
 
-- **DEP-001**: @supabase/ssr - Next.js SSR対応Supabaseクライアント
+- ~~**DEP-001**: @supabase/ssr - Next.js SSR対応Supabaseクライアント~~ (削除済み)
 - **DEP-002**: @supabase/supabase-js - JavaScript用Supabaseクライアント
 - **DEP-003**: 既存NextAuth認証システム - 継続使用
 - **DEP-004**: Neon PostgreSQL - データベース構造は維持
 
 ## 5. Files
 
-- **FILE-001**: `src/lib/supabase/server.ts` - Server Component用クライアント
-- **FILE-002**: `src/lib/supabase/client.ts` - Client Component用クライアント
+- **FILE-001**: `src/lib/supabase/server.ts` - Server Component用クライアント (Service Role)
+- ~~**FILE-002**: `src/lib/supabase/client.ts` - Client Component用クライアント~~ (削除済み)
 - **FILE-003**: `src/lib/supabase/storage.ts` - ストレージユーティリティ
-- **FILE-004**: `src/lib/supabase/middleware.ts` - セッション管理ミドルウェア
+- ~~**FILE-004**: `src/lib/supabase/middleware.ts` - セッション管理ミドルウェア~~ (削除済み)
 - **FILE-005**: `src/app/api/photos/route.ts` - 写真アップロードAPI更新
 - **FILE-006**: `src/app/api/photos/[id]/route.ts` - 写真取得API更新
 - **FILE-007**: `src/components/PhotoCard.tsx` - 画像表示コンポーネント更新
-- **FILE-008**: `middleware.ts` - ルートレベルミドルウェア更新
+- ~~**FILE-008**: `middleware.ts` - ルートレベルミドルウェア更新~~ (削除済み)
 - **FILE-009**: `.env.local` - Supabase環境変数追加
 
 ## 6. Testing
 
 - **TEST-001**: Supabaseクライアント接続テスト
 - **TEST-002**: ファイルアップロード機能テスト (認証あり/なし)
-- **TEST-003**: RLSポリシー動作テスト (オーナーアクセス制御)
+- ~~**TEST-003**: RLSポリシー動作テスト (オーナーアクセス制御)~~ (削除済み)
 - **TEST-004**: 署名付きURL生成・アクセステスト
 - **TEST-005**: ファイル削除機能テスト
-- **TEST-006**: セッション管理とミドルウェアテスト
+- ~~**TEST-006**: セッション管理とミドルウェアテスト~~ (削除済み)
 - **TEST-007**: エラーハンドリングテスト
 - **TEST-008**: パフォーマンステスト (署名付きURL生成速度)
 
 ## 7. Risks & Assumptions
 
-- **RISK-001**: NextAuthとSupabaseセッションの同期問題
+- ~~**RISK-001**: NextAuthとSupabaseセッションの同期問題~~ (削除済み - Service Role使用)
 - **RISK-002**: 既存データ移行時のダウンタイム
 - **RISK-003**: 署名付きURL生成のパフォーマンス影響
-- **RISK-004**: RLSポリシー設定ミスによるセキュリティ脆弱性
+- ~~**RISK-004**: RLSポリシー設定ミスによるセキュリティ脆弱性~~ (削除済み)
 - **ASSUMPTION-001**: 現在のファイルサイズは6MB以下（Supabase標準アップロード制限内）
 - **ASSUMPTION-002**: 同時アップロード数は現在のVercel制限内
 - **ASSUMPTION-003**: NextAuth認証セッションが継続して利用可能
@@ -148,6 +150,7 @@ tags: ["migration", "storage", "security", "supabase", "nextjs"]
 ## 8. Related Specifications / Further Reading
 
 - [Supabase Storage Documentation](https://supabase.com/docs/guides/storage)
-- [Next.js with Supabase SSR](https://supabase.com/docs/guides/auth/server-side/nextjs)
-- [Supabase Row Level Security](https://supabase.com/docs/guides/auth/row-level-security)
-- [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+- [Supabase JavaScript Client](https://supabase.com/docs/reference/javascript/storage-from-upload)
+- ~~[Next.js with Supabase SSR](https://supabase.com/docs/guides/auth/server-side/nextjs)~~ (削除済み)
+- ~~[Supabase Row Level Security](https://supabase.com/docs/guides/auth/row-level-security)~~ (削除済み)
+- ~~[Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)~~ (削除済み)
