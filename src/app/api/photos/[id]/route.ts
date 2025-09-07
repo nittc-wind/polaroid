@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPhoto } from "@/lib/db";
 import { getPhotoSignedUrl } from "@/lib/supabase/storage";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  handleStorageError,
+  handleApiError,
+  ERROR_CODES,
+} from "@/lib/api-utils";
 
 export async function GET(
   request: NextRequest,
@@ -10,16 +17,21 @@ export async function GET(
     const { id } = await params;
 
     if (!id) {
-      return NextResponse.json(
-        { error: "Photo ID is required" },
-        { status: 400 },
+      return createErrorResponse(
+        ERROR_CODES.BAD_REQUEST,
+        "Photo IDが必要です",
+        400,
       );
     }
 
     const photo = await getPhoto(id);
 
     if (!photo) {
-      return NextResponse.json({ error: "Photo not found" }, { status: 404 });
+      return createErrorResponse(
+        ERROR_CODES.NOT_FOUND,
+        "写真が見つかりません",
+        404,
+      );
     }
 
     // 24時間後に削除されているかチェック
@@ -27,7 +39,11 @@ export async function GET(
     expiryTime.setHours(expiryTime.getHours() + 24);
 
     if (new Date() > expiryTime) {
-      return NextResponse.json({ error: "Photo has expired" }, { status: 410 });
+      return createErrorResponse(
+        ERROR_CODES.NOT_FOUND,
+        "写真の有効期限が切れています",
+        410,
+      );
     }
 
     // Supabase Storage用の署名付きURL生成
@@ -40,12 +56,15 @@ export async function GET(
       if (signedUrlResult.success) {
         imageUrl = signedUrlResult.data!.signedUrl;
       } else {
-        console.error("Failed to generate signed URL:", signedUrlResult.error);
-        // エラーの場合は既存のimage_urlを使用（フォールバック）
+        console.warn(
+          "Failed to generate signed URL, falling back to image_url:",
+          signedUrlResult.error,
+        );
+        // 警告レベルに変更し、フォールバックで継続
       }
     }
 
-    return NextResponse.json({
+    return createSuccessResponse({
       id: photo.id,
       userId: photo.user_id,
       imageUrl,
@@ -56,10 +75,6 @@ export async function GET(
       createdAt: photo.created_at,
     });
   } catch (error) {
-    console.error("Error fetching photo:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return handleApiError(error);
   }
 }
