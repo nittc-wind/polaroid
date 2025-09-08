@@ -3,6 +3,7 @@
 import { memo, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { Check, Clock, X } from "lucide-react";
 
 interface Photo {
   id: string;
@@ -31,11 +32,28 @@ export const PhotoCard = memo(function PhotoCard({
   onClick,
   className,
 }: PhotoCardProps) {
+  // 通常カードタップで拡大
+  const [enlarged, setEnlarged] = useState(false);
+  const [flipped, setFlipped] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
 
   const isExpired = new Date() > photo.expires_at;
-  const handleClick = () => onClick?.(photo);
+
+  const handleCardClick = () => {
+    setEnlarged(true);
+    onClick?.(photo);
+  };
+
+  // 拡大後のチェキタップで裏返し
+  const handleFlip = () => setFlipped((f) => !f);
+
+  // 裏面の「閉じる」で元に戻す
+  const handleClose = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setEnlarged(false);
+    setFlipped(false);
+  };
 
   // 画像URL決定ロジック
   const getImageUrl = () => {
@@ -85,7 +103,6 @@ export const PhotoCard = memo(function PhotoCard({
         onClick={handleCardClick}
       >
         <div className="relative w-full flex-1 flex items-center justify-center">
-
           <div
             className="bg-white rounded-[12px] shadow-lg overflow-hidden flex items-center justify-center w-full"
             style={{ aspectRatio: "1/1", maxWidth: "180px" }}

@@ -44,6 +44,11 @@ function MemoriesPage() {
     );
   }, [photos]);
 
+  const handlePhotoClick = (photo: (typeof photos)[0]) => {
+    // TODO: 写真詳細画面への遷移を実装
+    console.log("Photo clicked:", photo);
+  };
+
   return (
     <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
