@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { receivePhoto } from "@/lib/db";
+import { getPhotoSignedUrl } from "@/lib/supabase/storage";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  handleStorageError,
+  handleApiError,
+  ERROR_CODES,
+} from "@/lib/api-utils";
 
 export async function POST(
   request: NextRequest,
@@ -12,9 +20,10 @@ export async function POST(
 
     // バリデーション
     if (!receiverName || typeof receiverName !== "string") {
-      return NextResponse.json(
-        { error: "受け取り者の名前が必要です" },
-        { status: 400 },
+      return createErrorResponse(
+        ERROR_CODES.VALIDATION_ERROR,
+        "受け取り者の名前が必要です",
+        400,
       );
     }
 
@@ -41,21 +50,45 @@ export async function POST(
     });
 
     if (!updatedPhoto) {
-      return NextResponse.json(
-        { error: "写真が見つからないか、既に受け取り済みです" },
-        { status: 404 },
+      return createErrorResponse(
+        ERROR_CODES.NOT_FOUND,
+        "写真が見つからないか、既に受け取り済みです",
+        404,
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      photo: updatedPhoto,
+    // Supabase Storage用の署名付きURL生成
+    let imageUrl = updatedPhoto.image_url; // デフォルト（既存データ用）
+
+    if (updatedPhoto.storage_path) {
+      // Supabase Storageパスが存在する場合は署名付きURLを生成
+      const signedUrlResult = await getPhotoSignedUrl(
+        updatedPhoto.storage_path,
+        7200,
+      ); // 2時間有効（受け取り後の閲覧用）
+
+      if (signedUrlResult.success) {
+        imageUrl = signedUrlResult.data!.signedUrl;
+      } else {
+        console.warn(
+          "Failed to generate signed URL for received photo, falling back to image_url:",
+          signedUrlResult.error,
+        );
+        // エラーの場合は既存のimage_urlを使用（フォールバック）
+      }
+    }
+
+    return createSuccessResponse({
+      id: updatedPhoto.id,
+      userId: updatedPhoto.user_id,
+      imageUrl, // 署名付きURLまたは既存URL
+      storagePath: updatedPhoto.storage_path, // camelCaseに統一
+      receiverName: updatedPhoto.receiver_name,
+      receivedAt: updatedPhoto.received_at,
+      location: updatedPhoto.location,
+      createdAt: updatedPhoto.created_at,
     });
   } catch (error) {
-    console.error("Photo receive error:", error);
-    return NextResponse.json(
-      { error: "写真の受け取りに失敗しました" },
-      { status: 500 },
-    );
+    return handleApiError(error);
   }
 }

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 interface Photo {
   id: string;
   image_url: string;
+  storage_path?: string; // Supabase Storage用パス
   created_at: Date;
   expires_at: Date;
   is_received: boolean;
@@ -30,20 +31,46 @@ export const PhotoCard = memo(function PhotoCard({
   onClick,
   className,
 }: PhotoCardProps) {
-  // 通常カードタップで拡大
-  const [enlarged, setEnlarged] = useState(false);
-  const [flipped, setFlipped] = useState(false);
-  const handleCardClick = () => {
-    setEnlarged(true);
-    onClick?.(photo);
+  const [imageError, setImageError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+
+  const isExpired = new Date() > photo.expires_at;
+  const handleClick = () => onClick?.(photo);
+
+  // 画像URL決定ロジック
+  const getImageUrl = () => {
+    // Supabase Storageの場合は、APIから取得した署名付きURLを使用
+    // APIレスポンスで既に適切なURLが設定されているはず
+    return photo.image_url;
   };
-  // 拡大後のチェキタップで裏返し
-  const handleFlip = () => setFlipped((f) => !f);
-  // 裏面の「閉じる」で元に戻す
-  const handleClose = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setEnlarged(false);
-    setFlipped(false);
+
+  // 状態の判定
+  const getStatus = () => {
+    if (isExpired && !photo.is_received) {
+      return {
+        type: "expired",
+        icon: X,
+        label: "期限切れ",
+        color: "text-gray-500",
+        bgColor: "bg-gray-100",
+      };
+    }
+    if (photo.is_received) {
+      return {
+        type: "received",
+        icon: Check,
+        label: photo.receiver_name || "受け取り済み",
+        color: "text-green-600",
+        bgColor: "bg-green-100",
+      };
+    }
+    return {
+      type: "waiting",
+      icon: Clock,
+      label: "待機中",
+      color: "text-yellow-600",
+      bgColor: "bg-yellow-100",
+    };
   };
   return (
     <>
@@ -58,6 +85,7 @@ export const PhotoCard = memo(function PhotoCard({
         onClick={handleCardClick}
       >
         <div className="relative w-full flex-1 flex items-center justify-center">
+
           <div
             className="bg-white rounded-[12px] shadow-lg overflow-hidden flex items-center justify-center w-full"
             style={{ aspectRatio: "1/1", maxWidth: "180px" }}

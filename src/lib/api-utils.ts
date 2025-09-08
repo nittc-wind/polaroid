@@ -22,6 +22,15 @@ export const ERROR_CODES = {
   RATE_LIMIT_EXCEEDED: "RATE_LIMIT_EXCEEDED",
   INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR",
   BAD_REQUEST: "BAD_REQUEST",
+
+  // Supabase Storage関連エラー
+  STORAGE_UPLOAD_FAILED: "STORAGE_UPLOAD_FAILED",
+  STORAGE_DOWNLOAD_FAILED: "STORAGE_DOWNLOAD_FAILED",
+  STORAGE_DELETE_FAILED: "STORAGE_DELETE_FAILED",
+  SIGNED_URL_GENERATION_FAILED: "SIGNED_URL_GENERATION_FAILED",
+  FILE_TOO_LARGE: "FILE_TOO_LARGE",
+  INVALID_FILE_TYPE: "INVALID_FILE_TYPE",
+  STORAGE_CONNECTION_ERROR: "STORAGE_CONNECTION_ERROR",
 } as const;
 
 // 成功レスポンス作成ヘルパー
@@ -190,6 +199,109 @@ export function calculatePagination(
     },
     offset,
   };
+}
+
+// Supabase Storage専用エラーハンドリング
+export function handleStorageError(
+  error: string | Error,
+  operation: "upload" | "download" | "delete" | "signedUrl" = "upload",
+): NextResponse<ApiErrorResponse> {
+  const errorMessage = typeof error === "string" ? error : error.message;
+
+  // エラーメッセージに基づいて適切なエラーコードを決定
+  let errorCode: string;
+  let statusCode = 500;
+  let userMessage: string;
+
+  if (
+    errorMessage.includes("File size") ||
+    errorMessage.includes("too large")
+  ) {
+    errorCode = ERROR_CODES.FILE_TOO_LARGE;
+    statusCode = 413;
+    userMessage = "ファイルサイズが大きすぎます（6MB以下にしてください）";
+  } else if (
+    errorMessage.includes("file type") ||
+    errorMessage.includes("format")
+  ) {
+    errorCode = ERROR_CODES.INVALID_FILE_TYPE;
+    statusCode = 400;
+    userMessage =
+      "サポートされていないファイル形式です（JPEG、PNG、WebPのみ対応）";
+  } else if (
+    errorMessage.includes("Missing") ||
+    errorMessage.includes("environment")
+  ) {
+    errorCode = ERROR_CODES.STORAGE_CONNECTION_ERROR;
+    statusCode = 500;
+    userMessage = "ストレージサービスの設定エラーです";
+  } else {
+    // 操作別のエラーコード
+    switch (operation) {
+      case "upload":
+        errorCode = ERROR_CODES.STORAGE_UPLOAD_FAILED;
+        userMessage = "画像のアップロードに失敗しました";
+        break;
+      case "download":
+        errorCode = ERROR_CODES.STORAGE_DOWNLOAD_FAILED;
+        userMessage = "画像の取得に失敗しました";
+        break;
+      case "delete":
+        errorCode = ERROR_CODES.STORAGE_DELETE_FAILED;
+        userMessage = "画像の削除に失敗しました";
+        break;
+      case "signedUrl":
+        errorCode = ERROR_CODES.SIGNED_URL_GENERATION_FAILED;
+        userMessage = "画像へのアクセスURLの生成に失敗しました";
+        break;
+      default:
+        errorCode = ERROR_CODES.INTERNAL_SERVER_ERROR;
+        userMessage = "ストレージ操作でエラーが発生しました";
+    }
+  }
+
+  console.error(`Storage ${operation} error:`, errorMessage);
+
+  return createErrorResponse(
+    errorCode,
+    userMessage,
+    statusCode,
+    process.env.NODE_ENV === "development" ? errorMessage : undefined,
+  );
+}
+
+// ファイルバリデーション
+export function validateFile(file: File): {
+  isValid: boolean;
+  error?: NextResponse<ApiErrorResponse>;
+} {
+  // ファイル形式チェック
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  if (!allowedTypes.includes(file.type)) {
+    return {
+      isValid: false,
+      error: createErrorResponse(
+        ERROR_CODES.INVALID_FILE_TYPE,
+        "JPEG、PNG、WebP形式の画像のみ対応しています",
+        400,
+      ),
+    };
+  }
+
+  // ファイルサイズチェック (6MB)
+  const maxSize = 6 * 1024 * 1024;
+  if (file.size > maxSize) {
+    return {
+      isValid: false,
+      error: createErrorResponse(
+        ERROR_CODES.FILE_TOO_LARGE,
+        "ファイルサイズは6MB以下にしてください",
+        413,
+      ),
+    };
+  }
+
+  return { isValid: true };
 }
 
 // 汎用エラーハンドラー

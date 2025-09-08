@@ -19,16 +19,6 @@ export function Navigation() {
             <span className="text-sm">
               こんにちは、{user?.handle_name || user?.name}さん
             </span>
-            <Link href="/camera">
-              <Button variant="outline" size="sm">
-                撮影
-              </Button>
-            </Link>
-            <Link href="/photos">
-              <Button variant="outline" size="sm">
-                マイフォト
-              </Button>
-            </Link>
             <Button variant="outline" size="sm" onClick={logout}>
               ログアウト
             </Button>

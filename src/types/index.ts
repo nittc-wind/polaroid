@@ -8,6 +8,7 @@ export interface Photo {
   id: string;
   userId: string;
   imageUrl: string;
+  storagePath: string; // Supabase Storage内のファイルパス
   qrCode: string;
   createdAt: Date;
   expiresAt: Date;
@@ -51,6 +52,7 @@ export interface QRScanResult {
 export interface PhotoListItem {
   id: string;
   imageUrl: string;
+  storagePath: string; // Supabase Storage内のファイルパス
   createdAt: Date;
   isReceived: boolean;
   receiverName?: string;
@@ -60,4 +62,24 @@ export interface PhotoListItem {
 
 export interface GroupedPhotos {
   [date: string]: PhotoListItem[];
+}
+
+// Supabase Storage関連の型定義
+export interface StorageUploadResult {
+  success: boolean;
+  data?: {
+    path: string;
+    publicUrl?: string;
+    signedUrl?: string;
+  };
+  error?: string;
+}
+
+export interface StorageDownloadResult {
+  success: boolean;
+  data?: {
+    signedUrl: string;
+    expiresIn: number;
+  };
+  error?: string;
 }

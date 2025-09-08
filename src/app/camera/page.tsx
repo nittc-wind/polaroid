@@ -22,10 +22,13 @@ function CameraPage() {
   const [isCameraLoading, setIsCameraLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isPhotoTaken, setIsPhotoTaken] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<string>("");
 
   // カメラ起動
   const startCamera = async () => {
     setIsCameraLoading(true);
+    setError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user" },
@@ -37,7 +40,7 @@ function CameraPage() {
       }
     } catch (err) {
       console.error("カメラの起動に失敗しました:", err);
-      alert("カメラの使用を許可してください");
+      setError("カメラの使用を許可してください");
     } finally {
       setIsCameraLoading(false);
     }
@@ -68,6 +71,8 @@ function CameraPage() {
 
     setIsUploading(true);
     setIsPhotoTaken(true); // 写真撮影後にカメラ映像を隠す
+    setError(null);
+    setUploadProgress("写真を準備中...");
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -75,6 +80,7 @@ function CameraPage() {
 
     if (!context) {
       setIsUploading(false);
+      setError("Canvas の初期化に失敗しました");
       return;
     }
 
@@ -86,10 +92,11 @@ function CameraPage() {
       async (blob) => {
         try {
           if (!blob) {
-            alert("画像の生成に失敗しました");
+            setError("画像の生成に失敗しました");
             return;
           }
 
+          setUploadProgress("画像をアップロード中...");
           const file = new File([blob], "photo.png", { type: "image/png" });
           const formData = new FormData();
           formData.append("image", file);
@@ -100,23 +107,38 @@ function CameraPage() {
           });
 
           if (!res.ok) {
-            console.error("アップロードに失敗しました:", await res.text());
-            alert("アップロードに失敗しました");
+            // 新しいエラーレスポンス形式に対応
+            try {
+              const errorData = await res.json();
+              if (errorData.error?.message) {
+                setError(
+                  `アップロードに失敗しました: ${errorData.error.message}`,
+                );
+              } else {
+                setError("アップロードに失敗しました");
+              }
+            } catch {
+              setError("アップロードに失敗しました");
+            }
             return;
           }
 
-          const photo = await res.json();
-          if (!photo?.id) {
-            alert("サーバーのレスポンスが不正です");
+          setUploadProgress("QRコードを生成中...");
+          // 新しい成功レスポンス形式に対応
+          const response = await res.json();
+          if (!response.success || !response.data?.id) {
+            setError("サーバーのレスポンスが不正です");
             return;
           }
 
-          router.push(`/qr/${photo.id}`);
+          // response.data が実際の photo オブジェクト
+          router.push(`/qr/${response.data.id}`);
         } catch (err) {
           console.error("アップロードエラー:", err);
-          alert("アップロード中にエラーが発生しました");
+          setError("アップロード中にエラーが発生しました");
         } finally {
           setIsUploading(false);
+          setUploadProgress("");
         }
       },
       "image/png",
@@ -149,7 +171,7 @@ function CameraPage() {
             <div className="mb-4 flex-1">
               {isPhotoTaken ? (
                 <div
-                  className="flex flex-col items-center justify-center bg-white rounded-[20px] shadow-xl border border-gray-100 py-6 px-4 w-full mx-auto cheki-card"
+                  className="w-full rounded-lg bg-white flex flex-col items-center justify-center p-4"
                   style={{
                     aspectRatio: "3/4",
                     maxWidth: "340px",
@@ -185,6 +207,25 @@ function CameraPage() {
               <canvas ref={canvasRef} style={{ display: "none" }} />
             </div>
             <div className="flex flex-col gap-3">
+              {/* エラー表示 */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <div className="text-red-800 text-sm">{error}</div>
+                  <Button
+                    onClick={() => {
+                      setError(null);
+                      setIsPhotoTaken(false);
+                      setUploadProgress("");
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="mt-2 text-red-800 border-red-200 hover:bg-red-100"
+                  >
+                    再試行
+                  </Button>
+                </div>
+              )}
+
               {!isStreamReady ? (
                 <Button
                   onClick={startCamera}
@@ -203,6 +244,22 @@ function CameraPage() {
                     </>
                   )}
                 </Button>
+              ) : isPhotoTaken && !error ? (
+                // 撮影後の操作ボタン（エラーがない場合）
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => {
+                      setIsPhotoTaken(false);
+                      setUploadProgress("");
+                      setError(null);
+                    }}
+                    variant="outline"
+                    className="flex-1 py-3"
+                    disabled={isUploading}
+                  >
+                    撮り直し
+                  </Button>
+                </div>
               ) : (
                 <Button
                   onClick={capture}
