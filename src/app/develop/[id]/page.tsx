@@ -18,7 +18,7 @@ export default function DevelopPage() {
 
   useEffect(() => {
     // 60秒かけて現像
-    const duration = 60000; // 60秒
+    const duration = 30000; // 30秒
     const interval = 100; // 100msごとに更新
     const increment = (100 / duration) * interval;
 

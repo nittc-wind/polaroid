@@ -7,6 +7,7 @@ import { Camera, RefreshCw, AlertCircle } from "lucide-react";
 interface Photo {
   id: string;
   image_url: string;
+  storage_path?: string; // Supabase Storage用パス
   created_at: Date;
   expires_at: Date;
   is_received: boolean;

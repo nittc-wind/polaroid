@@ -4,7 +4,14 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import Link from "next/link";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -58,78 +65,118 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-center">新規登録</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-1">
-                メールアドレス
-              </label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isLoading}
-              />
-            </div>
+    <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        <Card className="bg-white rounded-2xl p-6 max-h-[90vh] flex flex-col">
+          <CardHeader className="p-0 mb-6 text-center">
+            <CardTitle className="text-[#331515] text-xl font-medium mb-2">
+              ともだちチェキ
+            </CardTitle>
+            <CardDescription className="text-[#737373] text-sm">
+              新しいアカウントを作成して始めましょう
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1 p-0">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-[#0a0a0a] mb-2"
+                >
+                  メールアドレス
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="example@email.com"
+                  className="w-full border-[#e5e5e5] focus:border-[#603736] focus:ring-[#603736]"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
 
-            <div>
-              <label
-                htmlFor="handle_name"
-                className="block text-sm font-medium mb-1"
-              >
-                ハンドル名
-              </label>
-              <Input
-                id="handle_name"
-                type="text"
-                value={handleName}
-                onChange={(e) => setHandleName(e.target.value)}
-                required
-                disabled={isLoading}
-                maxLength={100}
-              />
-            </div>
+              <div>
+                <label
+                  htmlFor="handle_name"
+                  className="block text-sm font-medium text-[#0a0a0a] mb-2"
+                >
+                  ハンドル名
+                </label>
+                <Input
+                  id="handle_name"
+                  type="text"
+                  value={handleName}
+                  onChange={(e) => setHandleName(e.target.value)}
+                  placeholder="山田太郎"
+                  className="w-full border-[#e5e5e5] focus:border-[#603736] focus:ring-[#603736]"
+                  required
+                  disabled={isLoading}
+                  maxLength={100}
+                />
+              </div>
 
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium mb-1"
-              >
-                パスワード (6文字以上)
-              </label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={isLoading}
-                minLength={6}
-              />
-            </div>
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-[#0a0a0a] mb-2"
+                >
+                  パスワード（6文字以上）
+                </label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full border-[#e5e5e5] focus:border-[#603736] focus:ring-[#603736]"
+                  required
+                  disabled={isLoading}
+                  minLength={6}
+                />
+              </div>
 
-            {error && <div className="text-red-600 text-sm">{error}</div>}
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "登録中..." : "新規登録"}
-            </Button>
-          </form>
+              <div className="pt-4 space-y-3">
+                <Button
+                  type="submit"
+                  className="w-full bg-[#603736] hover:bg-[#331515] text-white py-3 disabled:opacity-50"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "登録中..." : "新規登録"}
+                </Button>
 
-          <div className="mt-4 text-center text-sm">
-            <span>既にアカウントをお持ちの方は </span>
-            <a href="/auth/signin" className="text-blue-600 hover:underline">
-              ログイン
-            </a>
-          </div>
-        </CardContent>
-      </Card>
+                <div className="text-center">
+                  <span className="text-[#737373] text-sm">
+                    既にアカウントをお持ちの方は{" "}
+                  </span>
+                  <Link
+                    href="/auth/signin"
+                    className="text-[#603736] hover:text-[#331515] text-sm font-medium hover:underline"
+                  >
+                    ログイン
+                  </Link>
+                </div>
+
+                <Button variant="ghost" className="w-full py-2" asChild>
+                  <Link
+                    href="/"
+                    className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
+                  >
+                    ホームに戻る
+                  </Link>
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

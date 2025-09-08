@@ -132,6 +132,9 @@
   height: 600px; /* h-[600px] */
   display: flex; /* flex */
   flex-direction: column; /* flex-col */
+  font-family: "Kiwi Maru", serif;
+  font-weight: 400;
+  font-style: normal;
 }
 
 .card-body {
