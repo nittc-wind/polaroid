@@ -123,13 +123,6 @@ export function PhotoGrid({
           </Button>
         </div>
       )}
-
-      {/* 全て読み込み完了メッセージ */}
-      {!hasMore && photos.length > 0 && (
-        <div className="text-center text-sm text-gray-500 py-4">
-          すべての写真を表示しました
-        </div>
-      )}
     </div>
   );
 }

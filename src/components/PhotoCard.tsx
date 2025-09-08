@@ -50,7 +50,7 @@ export const PhotoCard = memo(function PhotoCard({
       {/* 通常表示（小さいチェキ） */}
       <div
         className={cn(
-          "relative flex flex-col items-center bg-white rounded-[20px] shadow-xl border border-gray-100 py-4 px-2 w-full max-w-[220px] mx-auto cursor-pointer",
+          "relative flex flex-col items-center bg-white rounded-[8px] shadow-xl border border-gray-100 py-4 px-2 w-full max-w-[220px] mx-auto cursor-pointer",
           className,
           "cheki-card",
         )}
@@ -67,11 +67,13 @@ export const PhotoCard = memo(function PhotoCard({
               alt="cheki photo"
               fill
               className="object-cover"
-              sizes="(max-width: 768px) 80vw, 180px"
+              sizes="(max-width: 600px) 60vw, 160px"
               loading="lazy"
             />
           </div>
         </div>
+        {/* 下余白（チェキ風） */}
+        <div className="w-full h-6" />
       </div>
       {/* 拡大表示（チェキ枠ごと中央に大きく） */}
       {enlarged && (
@@ -80,111 +82,119 @@ export const PhotoCard = memo(function PhotoCard({
           onClick={handleClose}
         >
           <div
-            className="relative flex flex-col items-center bg-white rounded-[20px] shadow-xl border border-gray-100 py-6 px-4 w-full max-w-[400px] mx-auto cheki-card"
-            style={{ aspectRatio: "3/4", perspective: "1000px" }}
+            className={cn(
+              "relative flex flex-col items-center bg-white rounded-[8px] shadow-xl border border-gray-100 py-8 px-4 w-full max-w-[340px] mx-auto cheki-card transition-transform duration-500",
+              flipped ? "rotate-y-180" : "",
+            )}
+            style={{
+              aspectRatio: "3/4",
+              perspective: "1000px",
+              transformStyle: "preserve-3d",
+            }}
             onClick={(e) => e.stopPropagation()}
           >
+            {/* 表面（画像） */}
             <div
               className={cn(
-                "w-full h-full transition-transform duration-500 flex-1 flex items-center justify-center",
-                flipped ? "rotate-y-180" : "",
+                "absolute inset-0 flex flex-col items-center justify-center w-full h-full",
+                flipped ? "opacity-0 pointer-events-none" : "",
               )}
-              style={{
-                transformStyle: "preserve-3d",
-                position: "relative",
-                width: "100%",
-                height: "100%",
-              }}
+              style={{ backfaceVisibility: "hidden" }}
+              onClick={handleFlip}
             >
-              {/* 表面（画像） */}
-              {!flipped && (
+              <div className="relative w-full flex-1 flex items-center justify-center">
                 <div
-                  className={cn(
-                    "absolute inset-x-0 top-0 flex items-center justify-center bg-white rounded-[12px] shadow-lg overflow-hidden w-full",
-                  )}
+                  className="bg-white rounded-[12px] shadow-lg overflow-hidden flex items-center justify-center"
                   style={{
-                    backfaceVisibility: "hidden",
                     aspectRatio: "1/1",
-                    maxWidth: "340px",
-                    margin: "32px auto 0 auto",
-                    cursor: "pointer",
+                    maxWidth: "180px",
+                    width: "100%",
+                    margin: "0 auto",
                   }}
-                  onClick={handleFlip}
                 >
                   <Image
                     src={photo.image_url}
                     alt="cheki photo"
                     fill
                     className="object-cover"
-                    sizes="(max-width: 768px) 80vw, 340px"
+                    sizes="(max-width: 600px) 60vw, 160px"
                     loading="lazy"
                   />
-                  <span className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                    タップで詳細
-                  </span>
                 </div>
+              </div>
+              {/* 下余白（チェキ風） */}
+              <div className="w-full h-10" />
+            </div>
+            {/* 裏面（詳細情報） */}
+            <div
+              className={cn(
+                "absolute inset-0 flex flex-col items-center justify-center w-full h-full",
+                flipped ? "opacity-100" : "opacity-0 pointer-events-none",
               )}
-              {/* 裏面（詳細情報） */}
-              {flipped && (
-                <div
-                  className={cn(
-                    "absolute inset-x-0 top-0 flex flex-col items-center justify-center bg-white rounded-[12px] shadow-lg w-full p-6",
+              style={{
+                backfaceVisibility: "hidden",
+                transform: "rotateY(180deg)",
+              }}
+              onClick={handleFlip}
+            >
+              <div
+                className="bg-white rounded-[12px] shadow-lg w-full p-6 flex flex-col items-center justify-center"
+                style={{
+                  aspectRatio: "1/1",
+                  maxWidth: "340px",
+                  margin: "32px auto 0 auto",
+                }}
+              >
+                <h2 className="text-lg font-bold mb-2">詳細情報</h2>
+                <ul className="text-sm space-y-2">
+                  {photo.receiver_name && <li>名前: {photo.receiver_name}</li>}
+                  <li>
+                    撮影日:{" "}
+                    {photo.created_at.toLocaleDateString("ja-JP", {
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </li>
+                  {photo.location && (
+                    <li>
+                      位置情報:{" "}
+                      {photo.location.address ??
+                        `${photo.location.latitude}, ${photo.location.longitude}`}
+                    </li>
                   )}
-                  style={{
-                    backfaceVisibility: "hidden",
-                    transform: "rotateY(180deg)",
-                    aspectRatio: "1/1",
-                    maxWidth: "340px",
-                    margin: "32px auto 0 auto",
+                  <li>
+                    受け取り:{" "}
+                    {photo.is_received ? "受け取り済み" : "未受け取り"}
+                  </li>
+                  {photo.received_at && (
+                    <li>
+                      受け取り日時:{" "}
+                      {photo.received_at.toLocaleDateString("ja-JP", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </li>
+                  )}
+                  <li>
+                    有効期限:{" "}
+                    {photo.expires_at.toLocaleDateString("ja-JP", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </li>
+                </ul>
+                <button
+                  className="mt-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleClose();
                   }}
                 >
-                  <h2 className="text-lg font-bold mb-2">詳細情報</h2>
-                  <ul className="text-sm space-y-2">
-                    <li>
-                      撮影日:{" "}
-                      {photo.created_at.toLocaleDateString("ja-JP", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </li>
-                    {photo.location && (
-                      <li>
-                        位置情報:{" "}
-                        {photo.location.address ??
-                          `${photo.location.latitude}, ${photo.location.longitude}`}
-                      </li>
-                    )}
-                    <li>
-                      受け取り:{" "}
-                      {photo.is_received ? "受け取り済み" : "未受け取り"}
-                    </li>
-                    {photo.received_at && (
-                      <li>
-                        受け取り日時:{" "}
-                        {photo.received_at.toLocaleDateString("ja-JP", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </li>
-                    )}
-                    <li>
-                      有効期限:{" "}
-                      {photo.expires_at.toLocaleDateString("ja-JP", {
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </li>
-                  </ul>
-                  <button
-                    className="mt-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-                    onClick={handleClose}
-                  >
-                    閉じる
-                  </button>
-                </div>
-              )}
+                  閉じる
+                </button>
+              </div>
             </div>
             {/* 下余白（チェキ風） */}
             <div className="w-full h-8" />
