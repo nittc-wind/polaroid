@@ -35,8 +35,8 @@ export default function SignInPage() {
       if (result?.error) {
         setError("メールアドレスまたはパスワードが正しくありません");
       } else if (result?.ok) {
-        // ログイン成功時、カメラページにリダイレクト
-        window.location.href = "/camera";
+        // ログイン成功時、ホーム画面にリダイレクト
+        window.location.href = "/";
       }
     } catch (error) {
       setError("ログインに失敗しました");

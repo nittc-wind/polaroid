@@ -10,7 +10,7 @@ export function useAuth() {
   const user = session?.user;
 
   const logout = async () => {
-    await signOut({ redirectTo: "/auth/signin" });
+    await signOut({ redirectTo: "/" });
   };
 
   return {

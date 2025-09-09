@@ -2,7 +2,6 @@ import "@/app/globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Providers } from "@/components/Providers";
-import { Navigation } from "@/components/Navigation";
 
 export const metadata: Metadata = {
   title: "ともだちチェキ",
@@ -18,9 +17,6 @@ export default function RootLayout({
     <html lang="ja">
       <body>
         <Providers>
-          <header className="border-b">
-            <Navigation />
-          </header>
           <main>{children}</main>
           <footer className="border-t p-4 text-center text-sm text-gray-600">
             <p>&copy; 2024 ともだちチェキ</p>
