@@ -45,18 +45,57 @@ export default function DevelopPage() {
     const fetchPhotoData = async () => {
       try {
         const response = await fetch(`/api/photos/${params.id}`);
+
         if (!response.ok) {
-          throw new Error(`Failed to fetch photo: ${response.status}`);
+          // 新しいエラーレスポンス形式に対応
+          try {
+            const errorData = await response.json();
+            if (response.status === 404) {
+              setError("写真が見つかりません");
+            } else if (response.status === 410) {
+              setError("写真の有効期限が切れています");
+            } else if (errorData.error?.message) {
+              setError(`写真の取得に失敗しました: ${errorData.error.message}`);
+            } else {
+              setError("写真の取得に失敗しました");
+            }
+          } catch {
+            if (response.status === 404) {
+              setError("写真が見つかりません");
+            } else if (response.status === 410) {
+              setError("写真の有効期限が切れています");
+            } else {
+              setError("写真の取得に失敗しました");
+            }
+          }
+          setLoading(false);
+          return;
         }
-        const data = await response.json();
-        setPhotoData(data);
+
+        // 新しい成功レスポンス形式に対応
+        const result = await response.json();
+        console.log("API Response:", result); // デバッグ用ログ
+        console.log("Response success:", result.success); // デバッグ用ログ
+        console.log("Response data:", result.data); // デバッグ用ログ
+
+        if (!result.success || !result.data) {
+          console.error("Response structure error:", result); // デバッグ用ログ
+          setError("サーバーのレスポンスが不正です");
+          setLoading(false);
+          return;
+        }
+
+        console.log("Photo data about to set:", result.data); // デバッグ用ログ
+        console.log("Photo imageUrl:", result.data.imageUrl); // デバッグ用ログ
+
+        setPhotoData(result.data);
         setLoading(false);
 
         // データ取得後に現像開始
         startDeveloping();
       } catch (err) {
         console.error("Error fetching photo data:", err);
-        setError(err instanceof Error ? err.message : "Failed to load photo");
+        setError("写真の取得中にエラーが発生しました");
         setLoading(false);
       }
     };
@@ -158,17 +197,69 @@ export default function DevelopPage() {
                         className="bg-white rounded-[12px] shadow-lg overflow-hidden flex items-center justify-center w-full"
                         style={{ aspectRatio: "1/1", maxWidth: "240px" }}
                       >
-                        {photoData && (
+                        {imageLoadError ? (
+                          <div className="absolute inset-0 bg-red-50 border border-red-200 rounded-[12px] flex flex-col items-center justify-center p-4">
+                            <div className="text-red-800 text-xs text-center mb-2">
+                              {imageLoadError}
+                            </div>
+                            <Button
+                              onClick={() => {
+                                setImageLoadError(null);
+                              }}
+                              variant="outline"
+                              size="sm"
+                              className="text-red-800 border-red-200 hover:bg-red-100 text-xs"
+                            >
+                              再試行
+                            </Button>
+                          </div>
+                        ) : photoData ? (
                           <Image
                             src={photoData.imageUrl}
                             alt="完成したチェキ"
                             fill
                             className="object-cover"
                             sizes="(max-width: 600px) 80vw, 240px"
-                            onError={() =>
-                              setImageLoadError("画像の読み込みに失敗しました")
-                            }
+                            unoptimized={true} // Supabase署名付きURL用に最適化を無効化
+                            onError={(e) => {
+                              console.error("Image load error:", e);
+                              console.error(
+                                "Failed image URL:",
+                                photoData.imageUrl,
+                              );
+                              setImageLoadError("画像の読み込みに失敗しました");
+                            }}
+                            onLoad={() => {
+                              console.log(
+                                "Image loaded successfully:",
+                                photoData.imageUrl,
+                              );
+                            }}
                           />
+                        ) : (
+                          <div className="w-16 h-16 flex items-center justify-center">
+                            <svg
+                              width="48"
+                              height="48"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="#737373"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <rect
+                                x="3"
+                                y="3"
+                                width="18"
+                                height="18"
+                                rx="2"
+                                ry="2"
+                              />
+                              <circle cx="9" cy="9" r="2" />
+                              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                            </svg>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -261,6 +352,26 @@ export default function DevelopPage() {
                             fill
                             className="object-cover rounded-2xl"
                             sizes="(max-width: 600px) 80vw, 300px"
+                            unoptimized={true} // Supabase署名付きURL用に最適化を無効化
+                            onError={(e) => {
+                              console.error(
+                                "Image load error during development:",
+                                e,
+                              );
+                              console.error(
+                                "Failed image URL:",
+                                photoData.imageUrl,
+                              );
+                              setImageLoadError(
+                                "現像中の画像読み込みに失敗しました",
+                              );
+                            }}
+                            onLoad={() => {
+                              console.log(
+                                "Development image loaded successfully:",
+                                photoData.imageUrl,
+                              );
+                            }}
                           />
                         </div>
                       </div>
