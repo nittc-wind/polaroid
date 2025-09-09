@@ -51,7 +51,10 @@ export async function GET(
 
     if (photo.storage_path) {
       // Supabase Storageパスが存在する場合は署名付きURLを生成
-      const signedUrlResult = await getPhotoSignedUrl(photo.storage_path, 3600); // 1時間有効
+      const signedUrlResult = await getPhotoSignedUrl(
+        photo.storage_path,
+        21600,
+      ); // 6時間有効（長期キャッシュ）
 
       if (signedUrlResult.success) {
         imageUrl = signedUrlResult.data!.signedUrl;

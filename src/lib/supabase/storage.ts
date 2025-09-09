@@ -1,4 +1,5 @@
 import { createSupabaseServiceClient } from "./server";
+import { signedUrlCache } from "@/lib/signed-url-cache";
 
 export interface UploadResult {
   success: boolean;
@@ -67,13 +68,25 @@ export async function uploadPhoto(
 /**
  * 写真の署名付きURLを生成（プライベートアクセス用）
  * @param path Storageファイルパス
- * @param expiresIn 有効期限（秒）デフォルト1時間
+ * @param expiresIn 有効期限（秒）デフォルト6時間（長期キャッシュ対応）
  */
 export async function getPhotoSignedUrl(
   path: string,
-  expiresIn: number = 3600,
+  expiresIn: number = 21600, // 6時間に延長
 ): Promise<DownloadResult> {
   try {
+    // キャッシュから取得を試行
+    const cachedUrl = signedUrlCache.get(path);
+    if (cachedUrl) {
+      return {
+        success: true,
+        data: {
+          signedUrl: cachedUrl,
+          expiresIn,
+        },
+      };
+    }
+
     const supabase = createSupabaseServiceClient();
 
     const { data, error } = await supabase.storage
@@ -87,6 +100,9 @@ export async function getPhotoSignedUrl(
         error: `Failed to create signed URL: ${error.message}`,
       };
     }
+
+    // 新しく生成した署名付きURLをキャッシュに保存
+    signedUrlCache.set(path, data.signedUrl, expiresIn);
 
     return {
       success: true,
