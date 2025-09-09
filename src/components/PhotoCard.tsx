@@ -2,8 +2,8 @@
 
 import { memo, useState } from "react";
 import Image from "next/image";
-import { Check, Clock, X, MapPin, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Check, Clock, X } from "lucide-react";
 
 interface Photo {
   id: string;
@@ -21,22 +21,39 @@ interface Photo {
   };
 }
 
-interface PhotoCardProps {
+type PhotoCardProps = {
   photo: Photo;
   onClick?: (photo: Photo) => void;
   className?: string;
-}
+};
 
 export const PhotoCard = memo(function PhotoCard({
   photo,
   onClick,
   className,
 }: PhotoCardProps) {
+  // 通常カードタップで拡大
+  const [enlarged, setEnlarged] = useState(false);
+  const [flipped, setFlipped] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
 
   const isExpired = new Date() > photo.expires_at;
-  const handleClick = () => onClick?.(photo);
+
+  const handleCardClick = () => {
+    setEnlarged(true);
+    onClick?.(photo);
+  };
+
+  // 拡大後のチェキタップで裏返し
+  const handleFlip = () => setFlipped((f) => !f);
+
+  // 裏面の「閉じる」で元に戻す
+  const handleClose = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setEnlarged(false);
+    setFlipped(false);
+  };
 
   // 画像URL決定ロジック
   const getImageUrl = () => {
@@ -73,115 +90,162 @@ export const PhotoCard = memo(function PhotoCard({
       bgColor: "bg-yellow-100",
     };
   };
-
-  const status = getStatus();
-  const StatusIcon = status.icon;
-
   return (
-    <div
-      className={cn(
-        "relative bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition-all duration-200",
-        isExpired && "opacity-60",
-        className,
-      )}
-      onClick={handleClick}
-    >
-      {/* 写真画像 */}
-      <div className="relative aspect-square bg-gray-100">
-        {!imageError ? (
-          <Image
-            src={getImageUrl()}
-            alt={`撮影日: ${photo.created_at.toLocaleDateString()}`}
-            fill
-            className={cn(
-              "object-cover transition-opacity duration-300",
-              imageLoading ? "opacity-0" : "opacity-100",
-            )}
-            sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-            loading="lazy"
-            onLoad={() => setImageLoading(false)}
-            onError={() => {
-              setImageError(true);
-              setImageLoading(false);
-            }}
-          />
-        ) : (
-          // 画像読み込みエラー時のフォールバック
-          <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <div className="text-center text-gray-500">
-              <ImageIcon className="w-8 h-8 mx-auto mb-2" />
-              <p className="text-xs">画像を読み込めません</p>
-              {photo.storage_path && (
-                <p className="text-xs mt-1">Supabase Storage</p>
-              )}
-            </div>
-          </div>
+    <>
+      {/* 通常表示（小さいチェキ） */}
+      <div
+        className={cn(
+          "relative flex flex-col items-center bg-white rounded-[8px] shadow-xl border border-gray-100 py-4 px-2 w-full max-w-[220px] mx-auto cursor-pointer",
+          className,
+          "cheki-card",
         )}
-
-        {/* ローディング状態 */}
-        {imageLoading && !imageError && (
-          <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-            <div className="text-gray-400 text-xs">読み込み中...</div>
+        style={{ aspectRatio: "3/4", perspective: "1000px" }}
+        onClick={handleCardClick}
+      >
+        <div className="relative w-full flex-1 flex items-center justify-center">
+          <div
+            className="bg-white rounded-[12px] shadow-lg overflow-hidden flex items-center justify-center w-full"
+            style={{ aspectRatio: "1/1", maxWidth: "180px" }}
+          >
+            <Image
+              src={photo.image_url}
+              alt="cheki photo"
+              fill
+              className="object-cover"
+              sizes="(max-width: 600px) 60vw, 160px"
+              loading="lazy"
+            />
           </div>
-        )}
-
-        {/* ステータスオーバーレイ */}
-        <div className="absolute top-1 right-1">
+        </div>
+        {/* 下余白（チェキ風） */}
+        <div className="w-full h-6" />
+      </div>
+      {/* 拡大表示（チェキ枠ごと中央に大きく） */}
+      {enlarged && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={handleClose}
+        >
           <div
             className={cn(
-              "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium",
-              status.bgColor,
-              status.color,
+              "relative flex flex-col items-center bg-white rounded-[8px] shadow-xl border border-gray-100 py-8 px-4 w-full max-w-[340px] mx-auto cheki-card transition-transform duration-500",
+              flipped ? "rotate-y-180" : "",
             )}
+            style={{
+              aspectRatio: "3/4",
+              perspective: "1000px",
+              transformStyle: "preserve-3d",
+            }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <StatusIcon className="w-3 h-3" />
-            <span className="hidden sm:inline">{status.label}</span>
-          </div>
-        </div>
-
-        {/* 位置情報インジケーター */}
-        {photo.location && (
-          <div className="absolute top-1 left-1">
-            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-black/50 text-white text-xs">
-              <MapPin className="w-3 h-3" />
+            {/* 表面（画像） */}
+            <div
+              className={cn(
+                "absolute inset-0 flex flex-col items-center justify-center w-full h-full",
+                flipped ? "opacity-0 pointer-events-none" : "",
+              )}
+              style={{ backfaceVisibility: "hidden" }}
+              onClick={handleFlip}
+            >
+              <div className="relative w-full flex-1 flex items-center justify-center">
+                <div
+                  className="bg-white rounded-[12px] shadow-lg overflow-hidden flex items-center justify-center"
+                  style={{
+                    aspectRatio: "1/1",
+                    maxWidth: "180px",
+                    width: "100%",
+                    margin: "0 auto",
+                  }}
+                >
+                  <Image
+                    src={photo.image_url}
+                    alt="cheki photo"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 600px) 60vw, 160px"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+              {/* 下余白（チェキ風） */}
+              <div className="w-full h-10" />
             </div>
+            {/* 裏面（詳細情報） */}
+            <div
+              className={cn(
+                "absolute inset-0 flex flex-col items-center justify-center w-full h-full",
+                flipped ? "opacity-100" : "opacity-0 pointer-events-none",
+              )}
+              style={{
+                backfaceVisibility: "hidden",
+                transform: "rotateY(180deg)",
+              }}
+              onClick={handleFlip}
+            >
+              <div
+                className="bg-white rounded-[12px] shadow-lg w-full p-6 flex flex-col items-center justify-center"
+                style={{
+                  aspectRatio: "1/1",
+                  maxWidth: "340px",
+                  margin: "32px auto 0 auto",
+                }}
+              >
+                <h2 className="text-lg font-bold mb-2">詳細情報</h2>
+                <ul className="text-sm space-y-2">
+                  {photo.receiver_name && <li>名前: {photo.receiver_name}</li>}
+                  <li>
+                    撮影日:{" "}
+                    {photo.created_at.toLocaleDateString("ja-JP", {
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </li>
+                  {photo.location && (
+                    <li>
+                      位置情報:{" "}
+                      {photo.location.address ??
+                        `${photo.location.latitude}, ${photo.location.longitude}`}
+                    </li>
+                  )}
+                  <li>
+                    受け取り:{" "}
+                    {photo.is_received ? "受け取り済み" : "未受け取り"}
+                  </li>
+                  {photo.received_at && (
+                    <li>
+                      受け取り日時:{" "}
+                      {photo.received_at.toLocaleDateString("ja-JP", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </li>
+                  )}
+                  <li>
+                    有効期限:{" "}
+                    {photo.expires_at.toLocaleDateString("ja-JP", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </li>
+                </ul>
+                <button
+                  className="mt-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleClose();
+                  }}
+                >
+                  閉じる
+                </button>
+              </div>
+            </div>
+            {/* 下余白（チェキ風） */}
+            <div className="w-full h-8" />
           </div>
-        )}
-      </div>
-
-      {/* 写真情報 */}
-      <div className="p-2">
-        <div className="text-xs text-gray-600 mb-1">
-          {photo.created_at.toLocaleDateString("ja-JP", {
-            month: "short",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
         </div>
-
-        {/* 受け取り情報 */}
-        {photo.is_received && photo.received_at && (
-          <div className="text-xs text-green-600">
-            {photo.received_at.toLocaleDateString("ja-JP", {
-              month: "short",
-              day: "numeric",
-            })}{" "}
-            受け取り
-          </div>
-        )}
-
-        {/* 期限情報 */}
-        {!photo.is_received && !isExpired && (
-          <div className="text-xs text-yellow-600">
-            {photo.expires_at.toLocaleDateString("ja-JP", {
-              month: "short",
-              day: "numeric",
-            })}{" "}
-            まで
-          </div>
-        )}
-      </div>
-    </div>
+      )}
+    </>
   );
 });

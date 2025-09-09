@@ -173,15 +173,23 @@ function CameraPage() {
                 <div
                   className="w-full rounded-lg bg-white flex flex-col items-center justify-center p-4"
                   style={{
-                    maxWidth: "100%",
-                    aspectRatio: "4/3",
-                    maxHeight: "40vh",
+                    aspectRatio: "3/4",
+                    maxWidth: "340px",
+                    margin: "0 auto",
                   }}
                 >
-                  <Loader2 className="w-6 h-6 animate-spin text-[#603736] mb-2" />
-                  <div className="text-[#737373] text-sm text-center">
-                    {uploadProgress || "QRコードを生成しています..."}
+                  <div className="flex-1 flex items-center justify-center w-full">
+                    <div
+                      className="bg-white rounded-[12px] shadow-lg overflow-hidden flex items-center justify-center w-full"
+                      style={{ aspectRatio: "1/1", maxWidth: "220px" }}
+                    >
+                      <div className="text-[#737373] text-sm">
+                        QRコードを生成しています...
+                      </div>
+                    </div>
                   </div>
+                  {/* 下余白（チェキ風） */}
+                  <div className="w-full h-8" />
                 </div>
               ) : (
                 <video
