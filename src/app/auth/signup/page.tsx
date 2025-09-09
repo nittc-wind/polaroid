@@ -54,8 +54,8 @@ export default function SignUpPage() {
           setError("登録に失敗しました");
         }
       } else if (result?.ok) {
-        // 登録成功時、カメラページにリダイレクト
-        window.location.href = "/camera";
+        // 登録成功時、ホーム画面にリダイレクト
+        window.location.href = "/";
       }
     } catch (error) {
       setError("登録に失敗しました");
