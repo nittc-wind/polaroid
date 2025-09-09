@@ -65,6 +65,11 @@ function CameraPage() {
       stopCamera();
     };
   }, []);
+
+  // ページ読み込み時にカメラを自動起動
+  useEffect(() => {
+    startCamera();
+  }, []);
   // 撮影
   const capture = async () => {
     if (!videoRef.current || !canvasRef.current) return;
