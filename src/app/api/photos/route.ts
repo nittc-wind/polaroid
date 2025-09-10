@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     const photo = await createPhoto({
       device_id: deviceId || `user-${userId}`,
       user_id: userId,
-      image_url: "", // 一時的に空文字（後で署名付きURLで動的生成）
+      image_url: `supabase://photos/${uploadResult.data!.path}`, // Supabaseストレージパスを示す識別子
       storage_path: uploadResult.data!.path,
     });
 

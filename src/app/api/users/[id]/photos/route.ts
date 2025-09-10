@@ -8,6 +8,7 @@ import {
   ERROR_CODES,
 } from "@/lib/api-utils";
 import { getUserById, getUserPhotos } from "@/lib/db";
+import { getPhotoSignedUrl } from "@/lib/supabase/storage";
 import { paginationSchema } from "@/lib/validation";
 
 /**
@@ -59,6 +60,36 @@ export async function GET(
     const result = await getUserPhotos(userId, page, limit);
     const { photos, total, total_pages } = result;
 
+    // 各写真にSupabase Storage署名付きURLを生成
+    const photosWithSignedUrls = await Promise.all(
+      photos.map(async (photo) => {
+        let imageUrl = photo.image_url; // デフォルト
+
+        if (photo.storage_path) {
+          // Supabase Storageパスが存在する場合は署名付きURLを生成
+          const signedUrlResult = await getPhotoSignedUrl(
+            photo.storage_path,
+            3600, // 1時間有効
+          );
+
+          if (signedUrlResult.success) {
+            imageUrl = signedUrlResult.data!.signedUrl;
+          } else {
+            console.warn(
+              `Failed to generate signed URL for photo ${photo.id}:`,
+              signedUrlResult.error,
+            );
+            // エラーの場合は既存のimage_urlを使用（フォールバック）
+          }
+        }
+
+        return {
+          ...photo,
+          image_url: imageUrl,
+        };
+      }),
+    );
+
     const meta = {
       page,
       limit,
@@ -66,7 +97,7 @@ export async function GET(
       total_pages,
     };
 
-    return createSuccessResponse(photos, meta);
+    return createSuccessResponse(photosWithSignedUrls, meta);
   } catch (error) {
     console.error("GET /api/users/[id]/photos error:", error);
     return createErrorResponse(
