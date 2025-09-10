@@ -206,6 +206,7 @@ function CameraPage() {
                     maxWidth: "100%",
                     aspectRatio: "4/3",
                     maxHeight: "40vh",
+                    transform: "scaleX(-1)", // 左右反転
                   }}
                 />
               )}
