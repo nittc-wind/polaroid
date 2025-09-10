@@ -12,7 +12,6 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { Download, Share, ImageIcon } from "lucide-react";
 
 interface PhotoData {
   id: string;

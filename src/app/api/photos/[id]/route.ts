@@ -1,10 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { getPhoto } from "@/lib/db";
 import { getPhotoSignedUrl } from "@/lib/supabase/storage";
 import {
   createErrorResponse,
   createSuccessResponse,
-  handleStorageError,
   handleApiError,
   ERROR_CODES,
 } from "@/lib/api-utils";
