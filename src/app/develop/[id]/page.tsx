@@ -13,6 +13,9 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { usePhotoData } from "@/hooks/usePhotoData";
+import { useProfileGame } from "@/hooks/useProfileGame";
+import { QuestionDisplay } from "@/components/game/QuestionDisplay";
+import { NextQuestionButton } from "@/components/game/NextQuestionButton";
 
 export default function DevelopPage() {
   const params = useParams();
@@ -25,12 +28,40 @@ export default function DevelopPage() {
   // 共有フックを使用
   const { photoData, loading, error } = usePhotoData(params.id as string);
 
-  // データ取得完了後に現像開始
+  // プロフィール交換ゲーム
+  const {
+    gameState,
+    progressInfo,
+    hasNextQuestion,
+    currentQuestion,
+    isTransitioning,
+    startGame,
+    goToNextQuestion,
+    syncWithDevelopProgress,
+    isGameActive,
+  } = useProfileGame();
+
+  // データ取得完了後に現像とゲームを開始
   useEffect(() => {
     if (photoData && isDeveloping && !isDeveloped && progress === 0) {
       startDeveloping();
+      // ゲームを開始
+      if (!gameState.isGameStarted) {
+        try {
+          startGame();
+        } catch (error) {
+          console.error("Failed to start profile game:", error);
+        }
+      }
     }
-  }, [photoData, isDeveloping, isDeveloped, progress]);
+  }, [
+    photoData,
+    isDeveloping,
+    isDeveloped,
+    progress,
+    gameState.isGameStarted,
+    startGame,
+  ]);
 
   const startDeveloping = () => {
     // 30秒かけて現像
@@ -53,6 +84,13 @@ export default function DevelopPage() {
 
     return () => clearInterval(timer);
   };
+
+  // 現像プログレスとゲームの同期
+  useEffect(() => {
+    if (isGameActive) {
+      syncWithDevelopProgress(progress, isDeveloping);
+    }
+  }, [progress, isDeveloping, isGameActive, syncWithDevelopProgress]);
 
   // 現像完了時の自動ナビゲーション
   useEffect(() => {
@@ -219,17 +257,30 @@ export default function DevelopPage() {
           ) : (
             // 現像中の表示
             <>
-              <CardHeader className="p-0 mb-6 text-center">
+              <CardHeader className="p-0 mb-4 text-center">
                 <CardTitle className="text-[#0a0a0a] text-lg font-medium mb-2">
                   現像中...
                 </CardTitle>
                 <CardDescription className="text-[#737373] text-sm">
-                  チェキを現像しています。しばらくお待ちください。
+                  チェキを現像しています。お互いのことを知り合いましょう！
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex flex-col p-0">
+
+              <CardContent className="flex flex-col p-0 space-y-4">
+                {/* プロフィール交換ゲーム */}
+                {isGameActive && currentQuestion && (
+                  <div className="mb-4">
+                    <QuestionDisplay
+                      question={currentQuestion}
+                      questionNumber={progressInfo.current}
+                      totalQuestions={progressInfo.total}
+                      isTransitioning={isTransitioning}
+                    />
+                  </div>
+                )}
+
                 {/* プログレスバー */}
-                <div className="mb-6">
+                <div className="mb-4">
                   <div className="w-full bg-[#e5e5e5] rounded-full h-3 mb-3 overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-[#603736] to-[#331515] rounded-full transition-all duration-100 ease-out"
@@ -242,8 +293,9 @@ export default function DevelopPage() {
                     </span>
                   </div>
                 </div>
+
                 {/* 現像中のアニメーション表示エリア */}
-                <div className="flex-1 flex items-center justify-center mb-6">
+                <div className="flex-1 flex items-center justify-center mb-4">
                   <div
                     className="w-full aspect-[4/5] bg-[#e5e5e5] rounded-2xl flex items-center justify-center relative overflow-hidden"
                     style={{
@@ -321,6 +373,16 @@ export default function DevelopPage() {
                     )}
                   </div>
                 </div>
+
+                {/* 次の質問ボタン */}
+                {isGameActive && currentQuestion && (
+                  <NextQuestionButton
+                    onClick={goToNextQuestion}
+                    hasNextQuestion={hasNextQuestion}
+                    isTransitioning={isTransitioning}
+                    isGameCompleted={gameState.isGameCompleted}
+                  />
+                )}
               </CardContent>
             </>
           )}
