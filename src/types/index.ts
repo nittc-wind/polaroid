@@ -18,6 +18,23 @@ export interface Photo {
   location?: Location;
 }
 
+export interface PhotoMemo {
+  id: string;
+  photo_id: string;
+  user_id: string;
+  memo: string | null;
+  is_reunited: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+// 拡張された写真型（メモ情報付き）
+export interface PhotoWithMemo extends Photo {
+  memo: string | null;
+  is_reunited: boolean | null;
+  memo_updated_at: Date | null;
+}
+
 export interface CreatePhotoRequest {
   userId: string;
   imageBlob: Blob;
