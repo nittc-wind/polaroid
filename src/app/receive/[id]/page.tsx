@@ -134,7 +134,7 @@ export default function ReceivePage({
   // ローディング中の表示
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
+      <div className="min-h-[calc(100vh-53px)] bg-[#dfc7c7] flex items-center justify-center p-4">
         <div className="w-full max-w-sm">
           <Card className="bg-white rounded-2xl p-4">
             <CardContent className="p-0 flex items-center justify-center">
@@ -148,7 +148,7 @@ export default function ReceivePage({
   }
 
   return (
-    <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-53px)] bg-[#dfc7c7] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <Card className="bg-white rounded-2xl p-4 max-h-[90vh] overflow-y-auto flex flex-col">
           <CardHeader className="p-0 mb-3 text-center">
