@@ -2,13 +2,13 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Polaroid - 思い出をシェア",
-    short_name: "Polaroid",
+    name: "ともだちチェキ",
+    short_name: "ともだちチェキ",
     description: "フィルムカメラ風写真アプリで思い出をシェアしよう",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",
-    theme_color: "#000000",
+    theme_color: "#390F0F",
     orientation: "portrait",
     scope: "/",
     icons: [
