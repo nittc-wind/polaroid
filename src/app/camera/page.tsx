@@ -204,8 +204,8 @@ function CameraPage() {
                   className="w-full rounded-lg"
                   style={{
                     maxWidth: "100%",
-                    aspectRatio: "4/3",
-                    maxHeight: "40vh",
+                    aspectRatio: "3/4",
+                    maxHeight: "60vh",
                     transform: "scaleX(-1)", // 左右反転
                   }}
                 />
@@ -267,23 +267,20 @@ function CameraPage() {
                   </Button>
                 </div>
               ) : (
-                <Button
-                  onClick={capture}
-                  disabled={isUploading}
-                  className="w-full bg-[#603736] hover:bg-[#331515] text-white py-3 disabled:opacity-50"
-                >
-                  {isUploading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      処理中...
-                    </>
-                  ) : (
-                    <>
-                      <Camera className="w-4 h-4 mr-2" />
-                      撮影する
-                    </>
-                  )}
-                </Button>
+                /* 円形シャッターボタン */
+                <div className="flex justify-center py-3">
+                  <button
+                    onClick={capture}
+                    disabled={isUploading}
+                    className="relative w-11 h-11 rounded-full bg-white border-4 border-[#603736] flex items-center justify-center disabled:opacity-50 transition-all duration-150 active:scale-95 hover:border-[#331515]"
+                  >
+                    {isUploading ? (
+                      <Loader2 className="w-10 h-10 text-white animate-spin" />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-white"></div>
+                    )}
+                  </button>
+                </div>
               )}
             </div>
           </CardContent>
