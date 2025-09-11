@@ -18,6 +18,11 @@ interface Photo {
     longitude: number;
     address?: string;
   };
+  // 拡張プロパティ
+  photographer_name?: string | null;
+  memo?: string | null;
+  is_reunited?: boolean | null;
+  memo_updated_at?: Date | null;
 }
 
 interface PhotoGridProps {

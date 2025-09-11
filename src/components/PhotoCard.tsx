@@ -16,6 +16,7 @@ interface Photo {
   expires_at: Date;
   is_received: boolean;
   receiver_name?: string;
+  receiver_user_id?: string; // 新フィールド
   received_at?: Date;
   location?: {
     latitude: number;
@@ -23,9 +24,11 @@ interface Photo {
     address?: string;
   };
   // メモ関連プロパティ（オプショナル）
+  photographer_name?: string | null;
   memo?: string | null;
   is_reunited?: boolean | null;
   memo_updated_at?: Date | null;
+  photo_type?: "captured" | "received"; // 写真の種類
 }
 
 type PhotoCardProps = {
@@ -133,10 +136,18 @@ export const PhotoCard = memo(function PhotoCard({
       };
     }
     if (photo.is_received) {
+      // 受け取り済みの場合
+      let label = "受け取り済み";
+      if (photo.photo_type === "received" && photo.photographer_name) {
+        label = `${photo.photographer_name}から受け取り`;
+      } else if (photo.receiver_name) {
+        label = photo.receiver_name;
+      }
+
       return {
         type: "received",
         icon: Check,
-        label: photo.receiver_name || "受け取り済み",
+        label,
         color: "text-green-600",
         bgColor: "bg-green-100",
       };
@@ -170,6 +181,13 @@ export const PhotoCard = memo(function PhotoCard({
         )}
 
         <div className="relative w-full flex-1 flex items-center justify-center">
+          {/* 受け取りバッジ（左上） */}
+          {photo.photo_type === "received" && (
+            <div className="absolute top-2 left-2 z-10 bg-blue-500 text-white text-xs px-2 py-1 rounded-full shadow-lg">
+              受け取り
+            </div>
+          )}
+
           <div
             className="bg-white rounded-[12px] shadow-lg overflow-hidden flex items-center justify-center w-full"
             style={{ aspectRatio: "1/1", maxWidth: "180px" }}
@@ -219,13 +237,20 @@ export const PhotoCard = memo(function PhotoCard({
             {/* 表面（画像） */}
             <div
               className={cn(
-                "absolute inset-0 flex flex-col items-center justify-center w-full h-full",
+                "absolute inset-0 flex flex-col items-center justify-center w-full h-full px-4 py-4",
                 flipped ? "opacity-0 pointer-events-none" : "",
               )}
               style={{ backfaceVisibility: "hidden" }}
               onClick={handleFlip}
             >
               <div className="relative w-full flex-1 flex items-center justify-center">
+                {/* 受け取りバッジ（拡大表示時） */}
+                {photo.photo_type === "received" && (
+                  <div className="absolute top-2 left-2 z-10 bg-blue-500 text-white text-sm px-3 py-1 rounded-full shadow-lg">
+                    受け取り
+                  </div>
+                )}
+
                 <div
                   className="bg-white rounded-[12px] shadow-lg overflow-hidden flex items-center justify-center"
                   style={{
@@ -262,7 +287,7 @@ export const PhotoCard = memo(function PhotoCard({
             {/* 裏面（詳細情報） */}
             <div
               className={cn(
-                "absolute inset-0 flex flex-col items-center justify-center w-full h-full",
+                "absolute inset-0 flex flex-col items-center justify-center w-full h-full px-4 py-4",
                 flipped ? "opacity-100" : "opacity-0 pointer-events-none",
               )}
               style={{
@@ -272,11 +297,10 @@ export const PhotoCard = memo(function PhotoCard({
               onClick={handleFlip}
             >
               <div
-                className="bg-white rounded-[12px] shadow-lg w-full p-6 flex flex-col items-center justify-center"
+                className="bg-white rounded-[1px] shadow-lg w-full p-6 flex flex-col items-center justify-center"
                 style={{
-                  aspectRatio: "1/1",
-                  maxWidth: "340px",
-                  margin: "32px auto 0 auto",
+                  maxWidth: "180px",
+                  margin: "0 auto",
                 }}
               >
                 {isAuthenticated ? (
@@ -491,8 +515,6 @@ export const PhotoCard = memo(function PhotoCard({
                 </button>
               </div>
             </div>
-            {/* 下余白（チェキ風） */}
-            <div className="w-full h-8" />
           </div>
         </div>
       )}

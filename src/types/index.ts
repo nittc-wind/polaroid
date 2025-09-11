@@ -28,8 +28,9 @@ export interface PhotoMemo {
   updated_at: Date;
 }
 
-// 拡張された写真型（メモ情報付き）
+// 拡張された写真型（メモ情報と撮影者情報付き）
 export interface PhotoWithMemo extends Photo {
+  photographer_name: string | null;
   memo: string | null;
   is_reunited: boolean | null;
   memo_updated_at: Date | null;

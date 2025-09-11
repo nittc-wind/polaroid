@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Card,
   CardHeader,
@@ -23,6 +24,7 @@ export default function ReceivePage({
 }) {
   const { id } = React.use(params);
   const router = useRouter();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const [name, setName] = useState("");
   const [locationPermission, setLocationPermission] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,7 +34,8 @@ export default function ReceivePage({
     e.preventDefault();
     setError(null);
 
-    if (!name.trim()) {
+    // 未ログインユーザーの場合は名前が必須
+    if (!isAuthenticated && !name.trim()) {
       setError("名前を入力してください");
       return;
     }
@@ -59,15 +62,25 @@ export default function ReceivePage({
 
     // APIに送信
     try {
+      // 適切な型定義でrequestBodyを作成
+      const requestBody: {
+        location: { latitude: number; longitude: number } | null;
+        receiverName?: string;
+      } = {
+        location: locationData,
+      };
+
+      // 未ログインユーザーの場合のみ名前を含める
+      if (!isAuthenticated) {
+        requestBody.receiverName = name;
+      }
+
       const response = await fetch(`/api/photos/${id}/receive`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          receiverName: name,
-          location: locationData,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -118,8 +131,24 @@ export default function ReceivePage({
     }
   };
 
+  // ローディング中の表示
+  if (isLoading) {
+    return (
+      <div className="min-h-[calc(100vh-53px)] bg-[#dfc7c7] flex items-center justify-center p-4">
+        <div className="w-full max-w-sm">
+          <Card className="bg-white rounded-2xl p-4">
+            <CardContent className="p-0 flex items-center justify-center">
+              <Loader2 className="w-6 h-6 animate-spin" />
+              <span className="ml-2 text-sm text-[#737373]">読み込み中...</span>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-53px)] bg-[#dfc7c7] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <Card className="bg-white rounded-2xl p-4 max-h-[90vh] overflow-y-auto flex flex-col">
           <CardHeader className="p-0 mb-3 text-center">
@@ -127,7 +156,9 @@ export default function ReceivePage({
               写真を受け取る
             </CardTitle>
             <CardDescription className="text-xs text-[#737373]">
-              あなたの情報を入力してください
+              {isAuthenticated
+                ? `${user?.name || user?.email}として受け取ります`
+                : "あなたの情報を入力してください"}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
@@ -149,20 +180,37 @@ export default function ReceivePage({
             <form onSubmit={handleSubmit}>
               <div className="border border-[#e5e5e5] rounded-lg p-4 mb-6">
                 <h3 className="text-sm font-medium text-[#0a0a0a] mb-4">
-                  情報を入力
+                  {isAuthenticated ? "受け取り設定" : "情報を入力"}
                 </h3>
-                <div className="mb-4">
-                  <label className="text-sm text-[#0a0a0a] mb-2 block">
-                    あなたの名前*
-                  </label>
-                  <Input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="名前を入力してください"
-                    className="w-full"
-                    required
-                  />
-                </div>
+
+                {/* ログイン時は名前入力を表示しない */}
+                {!isAuthenticated && (
+                  <div className="mb-4">
+                    <label className="text-sm text-[#0a0a0a] mb-2 block">
+                      あなたの名前*
+                    </label>
+                    <Input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="名前を入力してください"
+                      className="w-full"
+                      required
+                    />
+                  </div>
+                )}
+
+                {/* ログイン時は受け取りユーザー情報を表示 */}
+                {isAuthenticated && (
+                  <div className="mb-4 p-3 bg-[#f8f9fa] rounded-lg border border-[#e9ecef]">
+                    <p className="text-sm text-[#0a0a0a] font-medium">
+                      {user?.name || user?.email}で受け取る
+                    </p>
+                    <p className="text-xs text-[#737373] mt-1">
+                      ログインしているため、自動的にアカウントに紐付けられます
+                    </p>
+                  </div>
+                )}
+
                 <div className="flex items-center space-x-2 mb-6">
                   <Checkbox
                     id="location"
