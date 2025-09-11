@@ -45,23 +45,19 @@ export async function GET(
       );
     }
 
-    // Supabase Storage用の署名付きURL生成
-    let imageUrl = photo.image_url; // 既存のURL（Vercel Blob）をデフォルト
+    // Supabase Storage署名付きURL生成
+    const signedUrlResult = await getPhotoSignedUrl(photo.storage_path, 3600); // 1時間有効
 
-    if (photo.storage_path) {
-      // Supabase Storageパスが存在する場合は署名付きURLを生成
-      const signedUrlResult = await getPhotoSignedUrl(photo.storage_path, 3600); // 1時間有効
-
-      if (signedUrlResult.success) {
-        imageUrl = signedUrlResult.data!.signedUrl;
-      } else {
-        console.warn(
-          "Failed to generate signed URL, falling back to image_url:",
-          signedUrlResult.error,
-        );
-        // 警告レベルに変更し、フォールバックで継続
-      }
+    if (!signedUrlResult.success) {
+      console.error("Failed to generate signed URL:", signedUrlResult.error);
+      return createErrorResponse(
+        ERROR_CODES.SIGNED_URL_GENERATION_FAILED,
+        "画像の取得に失敗しました",
+        500,
+      );
     }
+
+    const imageUrl = signedUrlResult.data!.signedUrl;
 
     return createSuccessResponse({
       id: photo.id,

@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       return handleStorageError(uploadResult.error!, "upload");
     }
 
-    // データベースに保存（storagePath追加）
+    // データベースに保存
     const photo = await createPhoto({
       device_id: deviceId || `user-${userId}`,
       user_id: userId,

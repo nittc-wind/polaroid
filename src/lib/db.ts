@@ -9,7 +9,7 @@ export interface Photo {
   device_id: string;
   user_id: string | null;
   image_url: string;
-  storage_path: string | null; // Supabase Storage内のファイルパス
+  storage_path: string; // Supabase Storage内のファイルパス（必須）
   created_at: Date;
   expires_at: Date;
   is_received: boolean;
@@ -39,7 +39,7 @@ export async function createPhoto(data: {
   device_id: string;
   user_id?: string | null;
   image_url: string;
-  storage_path?: string | null; // Supabase Storage用
+  storage_path: string; // Supabase Storage用（必須）
   expires_at?: Date;
 }) {
   const expires_at =
@@ -47,7 +47,7 @@ export async function createPhoto(data: {
 
   const result = await sql`
     INSERT INTO photos (device_id, user_id, image_url, storage_path, expires_at)
-    VALUES (${data.device_id}, ${data.user_id || null}, ${data.image_url}, ${data.storage_path || null}, ${expires_at})
+    VALUES (${data.device_id}, ${data.user_id || null}, ${data.image_url}, ${data.storage_path}, ${expires_at})
     RETURNING *
   `;
 
