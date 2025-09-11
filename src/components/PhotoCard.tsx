@@ -229,7 +229,7 @@ export const PhotoCard = memo(function PhotoCard({
             {/* 裏面（詳細情報） */}
             <div
               className={cn(
-                "absolute inset-0 flex flex-col items-center justify-center w-full h-full px-4 py-4",
+                "absolute inset-0 flex flex-col items-center justify-center w-full h-full px-2 py-4",
                 flipped ? "opacity-100" : "opacity-0 pointer-events-none",
               )}
               style={{
@@ -241,17 +241,17 @@ export const PhotoCard = memo(function PhotoCard({
               <div
                 className="bg-white rounded-[12px] shadow-lg w-full p-6 flex flex-col"
                 style={{
-                  maxWidth: "180px",
+                  maxWidth: "260px",
                   margin: "0 auto",
                 }}
               >
                 {/* Name section */}
                 {photo.receiver_name && (
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-6 h-6 flex items-center justify-center">
-                      <span className="text-black text-lg">👤</span>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-5 h-5 flex items-center justify-center">
+                      <span className="text-black text-base">👤</span>
                     </div>
-                    <span className="text-lg text-black">
+                    <span className="text-base text-black">
                       {photo.receiver_name}
                     </span>
                   </div>
@@ -259,9 +259,9 @@ export const PhotoCard = memo(function PhotoCard({
 
                 {/* Location section */}
                 {photo.location && (
-                  <div className="flex items-center gap-4 mb-6">
-                    <MapPin className="w-6 h-6 text-black" strokeWidth={1.5} />
-                    <span className="text-lg text-black">
+                  <div className="flex items-center gap-3 mb-4">
+                    <MapPin className="w-5 h-5 text-black" strokeWidth={1.5} />
+                    <span className="text-base text-black">
                       {photo.location.address
                         ? photo.location.address
                         : `${photo.location.latitude.toFixed(4)}, ${photo.location.longitude.toFixed(4)}`}
@@ -270,9 +270,9 @@ export const PhotoCard = memo(function PhotoCard({
                 )}
 
                 {/* Date section */}
-                <div className="flex items-center gap-4 mb-6">
-                  <Calendar className="w-6 h-6 text-black" strokeWidth={1.5} />
-                  <span className="text-lg text-black">
+                <div className="flex items-center gap-3 mb-4">
+                  <Calendar className="w-5 h-5 text-black" strokeWidth={1.5} />
+                  <span className="text-base text-black">
                     {photo.created_at.toLocaleDateString("ja-JP", {
                       year: "numeric",
                       month: "2-digit",
@@ -280,42 +280,21 @@ export const PhotoCard = memo(function PhotoCard({
                     })}
                   </span>
                 </div>
-
-                {/* Status section */}
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-6 h-6 flex items-center justify-center">
-                    {photo.is_received ? (
-                      <Check
-                        className="w-6 h-6 text-green-600"
-                        strokeWidth={1.5}
-                      />
-                    ) : (
-                      <Clock
-                        className="w-6 h-6 text-yellow-600"
-                        strokeWidth={1.5}
-                      />
-                    )}
-                  </div>
-                  <span className="text-lg text-black">
-                    {photo.is_received ? "受け取り済み" : "未受け取り"}
-                  </span>
-                </div>
-
                 {/* Memo section */}
-                <div className="mb-8">
-                  <div className="flex items-center gap-4 mb-4">
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 mb-3">
                     <FileText
-                      className="w-6 h-6 text-black"
+                      className="w-5 h-5 text-black"
                       strokeWidth={1.5}
                     />
-                    <span className="text-lg text-black">メモ</span>
+                    <span className="text-base text-black">メモ</span>
                   </div>
 
                   {/* Memo text area */}
                   <div className="relative">
-                    <div className="w-full h-16 border border-gray-400 rounded-md p-3 text-sm text-gray-600"></div>
+                    <div className="w-full h-14 border border-gray-400 rounded-md p-2 text-xs text-gray-600"></div>
                     <Edit3
-                      className="absolute bottom-3 right-3 w-5 h-5 text-gray-600"
+                      className="absolute bottom-2 right-2 w-4 h-4 text-gray-600"
                       strokeWidth={1.5}
                     />
                   </div>
@@ -324,7 +303,7 @@ export const PhotoCard = memo(function PhotoCard({
                 {/* Submit button */}
                 <div className="flex justify-center">
                   <button
-                    className="bg-[#603736] hover:bg-[#331515] text-white px-6 py-2 rounded-full flex items-center gap-2 transition-colors"
+                    className="bg-[#603736] hover:bg-[#331515] text-white px-4 py-2 rounded-full flex items-center gap-2 transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleClose();
