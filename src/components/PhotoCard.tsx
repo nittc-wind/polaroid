@@ -170,7 +170,7 @@ export const PhotoCard = memo(function PhotoCard({
             {/* 表面（画像） */}
             <div
               className={cn(
-                "absolute inset-0 flex flex-col items-center justify-center w-full h-full",
+                "absolute inset-0 flex flex-col items-center justify-center w-full h-full px-4 py-4",
                 flipped ? "opacity-0 pointer-events-none" : "",
               )}
               style={{ backfaceVisibility: "hidden" }}
@@ -179,7 +179,7 @@ export const PhotoCard = memo(function PhotoCard({
               <div className="relative w-full flex-1 flex items-center justify-center">
                 {/* 受け取りバッジ（拡大表示時） */}
                 {photo.photo_type === "received" && (
-                  <div className="absolute top-4 left-4 z-10 bg-blue-500 text-white text-sm px-3 py-1 rounded-full shadow-lg">
+                  <div className="absolute top-2 left-2 z-10 bg-blue-500 text-white text-sm px-3 py-1 rounded-full shadow-lg">
                     受け取り
                   </div>
                 )}
@@ -220,7 +220,7 @@ export const PhotoCard = memo(function PhotoCard({
             {/* 裏面（詳細情報） */}
             <div
               className={cn(
-                "absolute inset-0 flex flex-col items-center justify-center w-full h-full",
+                "absolute inset-0 flex flex-col items-center justify-center w-full h-full px-4 py-4",
                 flipped ? "opacity-100" : "opacity-0 pointer-events-none",
               )}
               style={{
@@ -230,11 +230,10 @@ export const PhotoCard = memo(function PhotoCard({
               onClick={handleFlip}
             >
               <div
-                className="bg-white rounded-[12px] shadow-lg w-full p-6 flex flex-col items-center justify-center"
+                className="bg-white rounded-[1px] shadow-lg w-full p-6 flex flex-col items-center justify-center"
                 style={{
-                  aspectRatio: "1/1",
-                  maxWidth: "340px",
-                  margin: "32px auto 0 auto",
+                  maxWidth: "180px",
+                  margin: "0 auto",
                 }}
               >
                 <h2 className="text-lg font-bold mb-2">詳細情報</h2>
@@ -288,8 +287,6 @@ export const PhotoCard = memo(function PhotoCard({
                 </button>
               </div>
             </div>
-            {/* 下余白（チェキ風） */}
-            <div className="w-full h-8" />
           </div>
         </div>
       )}
