@@ -1,8 +1,6 @@
 import "@/app/globals.css";
 import type { Metadata, Viewport } from "next";
-import Link from "next/link";
 import { Providers } from "@/components/Providers";
-import PWAProvider from "@/components/PWAProvider";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 export const metadata: Metadata = {
@@ -75,31 +73,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <head>
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Polaroid" />
-        <meta name="msapplication-TileColor" content="#000000" />
-        <meta name="msapplication-tap-highlight" content="no" />
-      </head>
-      <body>
-        <PWAProvider />
+      <body className="min-h-screen flex flex-col">
         <Providers>
-          <main>{children}</main>
-          <footer className="border-t p-4 text-center text-sm text-gray-600">
-            <p>&copy; 2024 Polaroid</p>
-            <div className="mt-2 space-x-4">
-              <Link href="/receive/sample-id" className="hover:underline">
-                開発用
-              </Link>
-              <Link href="/develop/sample-id" className="hover:underline">
-                開発用2
-              </Link>
-              <Link href="/complete/sample-id" className="hover:underline">
-                開発用3
-              </Link>
-            </div>
+          <main className="flex-1">{children}</main>
+          <footer className="bg-[#dfc7c7] border-t p-4 text-center text-sm text-gray-600">
+            <p>&copy; 2025 ともだちチェキ</p>
           </footer>
           <PWAInstallPrompt />
         </Providers>
