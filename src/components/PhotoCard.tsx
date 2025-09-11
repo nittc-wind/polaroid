@@ -13,12 +13,15 @@ interface Photo {
   expires_at: Date;
   is_received: boolean;
   receiver_name?: string;
+  receiver_user_id?: string; // 新フィールド
   received_at?: Date;
   location?: {
     latitude: number;
     longitude: number;
     address?: string;
   };
+  photo_type?: "captured" | "received"; // 写真の種類
+  photographer_name?: string; // 撮影者名
 }
 
 type PhotoCardProps = {
@@ -74,10 +77,18 @@ export const PhotoCard = memo(function PhotoCard({
       };
     }
     if (photo.is_received) {
+      // 受け取り済みの場合
+      let label = "受け取り済み";
+      if (photo.photo_type === "received" && photo.photographer_name) {
+        label = `${photo.photographer_name}から受け取り`;
+      } else if (photo.receiver_name) {
+        label = photo.receiver_name;
+      }
+
       return {
         type: "received",
         icon: Check,
-        label: photo.receiver_name || "受け取り済み",
+        label,
         color: "text-green-600",
         bgColor: "bg-green-100",
       };
@@ -103,6 +114,13 @@ export const PhotoCard = memo(function PhotoCard({
         onClick={handleCardClick}
       >
         <div className="relative w-full flex-1 flex items-center justify-center">
+          {/* 受け取りバッジ（左上） */}
+          {photo.photo_type === "received" && (
+            <div className="absolute top-2 left-2 z-10 bg-blue-500 text-white text-xs px-2 py-1 rounded-full shadow-lg">
+              受け取り
+            </div>
+          )}
+
           <div
             className="bg-white rounded-[12px] shadow-lg overflow-hidden flex items-center justify-center w-full"
             style={{ aspectRatio: "1/1", maxWidth: "180px" }}
@@ -159,6 +177,13 @@ export const PhotoCard = memo(function PhotoCard({
               onClick={handleFlip}
             >
               <div className="relative w-full flex-1 flex items-center justify-center">
+                {/* 受け取りバッジ（拡大表示時） */}
+                {photo.photo_type === "received" && (
+                  <div className="absolute top-4 left-4 z-10 bg-blue-500 text-white text-sm px-3 py-1 rounded-full shadow-lg">
+                    受け取り
+                  </div>
+                )}
+
                 <div
                   className="bg-white rounded-[12px] shadow-lg overflow-hidden flex items-center justify-center"
                   style={{

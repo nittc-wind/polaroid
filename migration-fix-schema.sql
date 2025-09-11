@@ -1,5 +1,6 @@
 -- Supabase Storage移行のためのPhotosテーブル更新
 -- storage_pathカラムを追加してSupabase Storage内のファイルパスを保存
+-- ⚠️ 注意: このファイルは歴史的記録用です。最新の完全移行は migration-cleanup-vercel-blob.sql を使用してください
 
 -- 1. storage_pathカラムを追加（NULL許可、既存データとの互換性のため）
 ALTER TABLE photos 

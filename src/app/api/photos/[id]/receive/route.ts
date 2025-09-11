@@ -5,6 +5,7 @@ import {
   createErrorResponse,
   createSuccessResponse,
   handleApiError,
+  getOptionalAuth,
   ERROR_CODES,
 } from "@/lib/api-utils";
 
@@ -17,8 +18,14 @@ export async function POST(
     const body = await request.json();
     const { receiverName, location } = body;
 
-    // バリデーション
-    if (!receiverName || typeof receiverName !== "string") {
+    // オプショナル認証チェック
+    const { session, isAuthenticated } = await getOptionalAuth();
+
+    // バリデーション: ログインしていない場合は名前が必要
+    if (
+      !isAuthenticated &&
+      (!receiverName || typeof receiverName !== "string")
+    ) {
       return createErrorResponse(
         ERROR_CODES.VALIDATION_ERROR,
         "受け取り者の名前が必要です",
@@ -42,11 +49,23 @@ export async function POST(
       };
     }
 
-    // データベースに保存
-    const updatedPhoto = await receivePhoto(id, {
-      receiver_name: receiverName,
-      location: locationData,
-    });
+    // データベースに保存: ログイン状態に応じて異なるデータを保存
+    let receiveData;
+    if (isAuthenticated && session?.user?.id) {
+      // ログインユーザーの場合: receiver_user_id を設定
+      receiveData = {
+        receiver_user_id: session.user.id,
+        location: locationData,
+      };
+    } else {
+      // 未ログインユーザーの場合: receiver_name を設定
+      receiveData = {
+        receiver_name: receiverName,
+        location: locationData,
+      };
+    }
+
+    const updatedPhoto = await receivePhoto(id, receiveData);
 
     if (!updatedPhoto) {
       return createErrorResponse(
@@ -83,9 +102,15 @@ export async function POST(
       imageUrl, // 署名付きURLまたは既存URL
       storagePath: updatedPhoto.storage_path, // camelCaseに統一
       receiverName: updatedPhoto.receiver_name,
+      receiverUserId: updatedPhoto.receiver_user_id, // 新フィールド追加
       receivedAt: updatedPhoto.received_at,
       location: updatedPhoto.location,
       createdAt: updatedPhoto.created_at,
+      // 認証状態情報も含める
+      authenticationStatus: {
+        isAuthenticated,
+        receivedBy: isAuthenticated ? "user" : "guest",
+      },
     });
   } catch (error) {
     return handleApiError(error);

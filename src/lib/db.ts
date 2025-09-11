@@ -9,11 +9,12 @@ export interface Photo {
   device_id: string;
   user_id: string | null;
   image_url: string;
-  storage_path: string | null; // Supabase Storage内のファイルパス
+  storage_path: string; // Supabase Storage内のファイルパス（必須）
   created_at: Date;
   expires_at: Date;
   is_received: boolean;
-  receiver_name: string | null;
+  receiver_name: string | null; // 未ログインユーザー用
+  receiver_user_id: string | null; // ログインユーザー用
   received_at: Date | null;
   location: {
     latitude: number;
@@ -39,7 +40,7 @@ export async function createPhoto(data: {
   device_id: string;
   user_id?: string | null;
   image_url: string;
-  storage_path?: string | null; // Supabase Storage用
+  storage_path: string; // Supabase Storage用（必須）
   expires_at?: Date;
 }) {
   const expires_at =
@@ -47,7 +48,7 @@ export async function createPhoto(data: {
 
   const result = await sql`
     INSERT INTO photos (device_id, user_id, image_url, storage_path, expires_at)
-    VALUES (${data.device_id}, ${data.user_id || null}, ${data.image_url}, ${data.storage_path || null}, ${expires_at})
+    VALUES (${data.device_id}, ${data.user_id || null}, ${data.image_url}, ${data.storage_path}, ${expires_at})
     RETURNING *
   `;
 
@@ -263,7 +264,7 @@ export async function getUserStats(userId: string) {
   };
 }
 
-// ユーザーの写真一覧取得
+// ユーザーの写真一覧取得（撮影した写真 + 受け取った写真）
 export async function getUserPhotos(
   userId: string,
   page: number = 1,
@@ -271,25 +272,28 @@ export async function getUserPhotos(
 ) {
   const offset = (page - 1) * limit;
 
-  // 総件数取得
+  // 総件数取得（撮影した写真 + 受け取った写真）
   const countResult = await sql`
     SELECT COUNT(*) as count 
     FROM photos 
-    WHERE user_id = ${userId}
+    WHERE user_id = ${userId} OR receiver_user_id = ${userId}
   `;
   const total = parseInt(countResult[0].count);
 
-  // データ取得
+  // データ取得（撮影者情報も含める）
   const photos = await sql`
-    SELECT * 
-    FROM photos 
-    WHERE user_id = ${userId}
-    ORDER BY created_at DESC
+    SELECT 
+      p.*,
+      u.handle_name as photographer_name
+    FROM photos p
+    LEFT JOIN users u ON p.user_id = u.id
+    WHERE p.user_id = ${userId} OR p.receiver_user_id = ${userId}
+    ORDER BY p.created_at DESC
     LIMIT ${limit} OFFSET ${offset}
   `;
 
   return {
-    photos: photos as Photo[],
+    photos: photos as (Photo & { photographer_name: string | null })[],
     total,
     page,
     limit,
@@ -307,6 +311,23 @@ export async function getPhoto(id: string) {
   return result[0] as Photo | undefined;
 }
 
+// 写真詳細取得（撮影者情報含む）
+export async function getPhotoWithPhotographer(id: string) {
+  const result = await sql`
+    SELECT 
+      p.*,
+      u.handle_name as photographer_name
+    FROM photos p
+    LEFT JOIN users u ON p.user_id = u.id
+    WHERE p.id = ${id}
+    LIMIT 1
+  `;
+
+  return result[0] as
+    | (Photo & { photographer_name: string | null })
+    | undefined;
+}
+
 export async function getPhotosByDevice(device_id: string) {
   const result = await sql`
     SELECT * FROM photos 
@@ -321,24 +342,49 @@ export async function getPhotosByDevice(device_id: string) {
 export async function receivePhoto(
   id: string,
   data: {
-    receiver_name: string;
+    receiver_name?: string; // 未ログインユーザー用
+    receiver_user_id?: string; // ログインユーザー用
     location?: { latitude: number; longitude: number; address?: string };
   },
 ) {
-  const result = await sql`
-    UPDATE photos 
-    SET 
-      is_received = true,
-      receiver_name = ${data.receiver_name},
-      received_at = NOW(),
-      location = ${JSON.stringify(data.location) || null}
-    WHERE id = ${id}
-      AND is_received = false
-      AND expires_at > NOW()
-    RETURNING *
-  `;
+  // ログインユーザーの場合
+  if (data.receiver_user_id) {
+    const result = await sql`
+      UPDATE photos 
+      SET 
+        is_received = true,
+        receiver_user_id = ${data.receiver_user_id},
+        receiver_name = NULL,
+        received_at = NOW(),
+        location = ${JSON.stringify(data.location) || null}
+      WHERE id = ${id}
+        AND is_received = false
+        AND expires_at > NOW()
+      RETURNING *
+    `;
+    return result[0] as Photo | undefined;
+  }
 
-  return result[0] as Photo | undefined;
+  // 未ログインユーザーの場合
+  if (data.receiver_name) {
+    const result = await sql`
+      UPDATE photos 
+      SET 
+        is_received = true,
+        receiver_name = ${data.receiver_name},
+        receiver_user_id = NULL,
+        received_at = NOW(),
+        location = ${JSON.stringify(data.location) || null}
+      WHERE id = ${id}
+        AND is_received = false
+        AND expires_at > NOW()
+      RETURNING *
+    `;
+    return result[0] as Photo | undefined;
+  }
+
+  // どちらも指定されていない場合はエラー
+  throw new Error("Either receiver_name or receiver_user_id must be provided");
 }
 
 // 期限切れ写真のクリーンアップ
