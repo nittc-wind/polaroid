@@ -103,6 +103,12 @@ export async function requireAuth(): Promise<{
   return { error: null, session };
 }
 
+// オプショナル認証チェックヘルパー（認証されていなくてもエラーにならない）
+export async function getOptionalAuth(): Promise<Session | null> {
+  const session = await auth();
+  return session;
+}
+
 // 本人確認ヘルパー
 export function requireSelfOrError(
   sessionUserId: string,

@@ -86,6 +86,10 @@ export async function GET(
         return {
           ...photo,
           image_url: imageUrl,
+          // 受け取った写真かどうかの判定フラグを追加
+          is_received_by_user: photo.receiver_user_id === userId,
+          // 撮影者名を含める（受け取った写真の場合に表示用）
+          photographer_name: photo.photographer_name,
         };
       }),
     );
