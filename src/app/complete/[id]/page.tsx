@@ -13,6 +13,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { usePhotoData } from "@/hooks/usePhotoData";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function CompletePage({
   params,
@@ -21,6 +22,9 @@ export default function CompletePage({
 }) {
   const { id } = use(params);
   const [imageLoadError, setImageLoadError] = useState<string | null>(null);
+
+  // 認証状態の取得
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   // 共有フックを使用
   const { photoData, loading, error } = usePhotoData(id);
@@ -81,6 +85,87 @@ export default function CompletePage({
       // フォールバック: URLをクリップボードにコピー
       navigator.clipboard.writeText(window.location.href);
       alert("URLをクリップボードにコピーしました！");
+    }
+  };
+
+  // 将来的な機能のプレースホルダー関数
+  const handleAddToMemories = () => {
+    // TODO: 思い出に追加機能の実装
+    alert("思い出への追加機能は準備中です");
+  };
+
+  const handleLoginAndAdd = () => {
+    // TODO: ログインして思い出に追加機能の実装
+    alert("ログインして思い出に追加機能は準備中です");
+  };
+
+  // ログイン状態に応じたアクションボタンをレンダリング
+  const renderActionButtons = () => {
+    if (authLoading) {
+      return (
+        <div className="space-y-3 mb-6">
+          <div className="flex items-center justify-center py-8">
+            <div className="w-6 h-6 flex items-center justify-center">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#737373"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="animate-spin"
+              >
+                <path d="M21 12a9 9 0 11-6.219-8.56" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (isAuthenticated) {
+      // ログイン時: 思い出に追加済み（無効）+ ホームに戻る
+      return (
+        <div className="space-y-3 mb-6">
+          <div className="flex flex-row gap-3">
+            <Button
+              disabled={true}
+              className="flex-1 bg-gray-400 text-white py-3 cursor-not-allowed"
+            >
+              思い出に追加済み
+            </Button>
+            <Button
+              asChild
+              className="flex-1 bg-[#603636] hover:bg-[#603636]/90 text-white py-3"
+            >
+              <Link href="/">ホームに戻る</Link>
+            </Button>
+          </div>
+        </div>
+      );
+    } else {
+      // 未ログイン時: ログインして思い出に追加 + ホームに戻る
+      return (
+        <div className="space-y-3 mb-6">
+          <div className="flex flex-row gap-3">
+            <Button
+              onClick={handleLoginAndAdd}
+              className="flex-1 bg-[#603636] hover:bg-[#603636]/90 text-white py-3"
+            >
+              ログインして思い出に追加
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="flex-1 border-[#603636] text-[#603636] hover:bg-[#603636]/5 py-3"
+            >
+              <Link href="/">ホームに戻る</Link>
+            </Button>
+          </div>
+        </div>
+      );
     }
   };
 
@@ -241,55 +326,12 @@ export default function CompletePage({
                 )}
 
                 {/* アクションボタン */}
-                <div className="space-y-3 mb-6">
-                  <div className="flex flex-row gap-3">
-                    <Button
-                      onClick={handleDownload}
-                      disabled={
-                        loading || error !== null || !photoData?.imageUrl
-                      }
-                      className="flex-1 bg-[#603636] hover:bg-[#603636]/90 text-white py-3 disabled:opacity-50"
-                    >
-                      保存する
-                    </Button>
-                    <Button
-                      onClick={handleShare}
-                      disabled={loading || error !== null}
-                      variant="outline"
-                      className="flex-1 border-[#603636] text-[#603636] hover:bg-[#603636]/5 py-3 bg-transparent disabled:opacity-50"
-                    >
-                      シェア
-                    </Button>
-                  </div>
-                  <Button asChild className="w-full" variant="outline">
-                    <Link href="/photos">写真一覧を見る</Link>
-                  </Button>
-                  <Button variant="outline" asChild className="w-full">
-                    <Link href="/camera">新しく撮影する</Link>
-                  </Button>
-                </div>
+                {renderActionButtons()}
               </>
             )}
 
             {/* フッター情報 */}
             <div className="text-center space-y-3 w-full">
-              <div>
-                <CardTitle className="text-[#603636] text-base font-medium mb-1">
-                  ともだちチェキを使ってみませんか？
-                </CardTitle>
-                <CardDescription className="text-[#737373] text-xs">
-                  あなたも友達との思い出を特別な形で残しましょう！
-                </CardDescription>
-              </div>
-              <Button
-                variant="ghost"
-                className="w-full text-[#603636] hover:bg-[#603636]/5"
-                asChild
-              >
-                <Link href="/" className="w-full block">
-                  アプリを使ってみる
-                </Link>
-              </Button>
               <p className="text-[#737373] text-xs">
                 ※ この写真は24時間後に自動的に削除されます
               </p>
