@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "./auth";
 import { ZodError, ZodSchema } from "zod";
 import {
-  ApiResponse,
-  StrictApiResponse,
   ApiSuccessResponse,
   ApiErrorResponse,
   ErrorDetails,
