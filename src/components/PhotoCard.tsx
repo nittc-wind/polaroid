@@ -3,7 +3,16 @@
 import { memo, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { Check, Clock, X } from "lucide-react";
+import {
+  Check,
+  Clock,
+  X,
+  MapPin,
+  Calendar,
+  FileText,
+  Edit3,
+  Hand,
+} from "lucide-react";
 
 interface Photo {
   id: string;
@@ -170,7 +179,7 @@ export const PhotoCard = memo(function PhotoCard({
             {/* 表面（画像） */}
             <div
               className={cn(
-                "absolute inset-0 flex flex-col items-center justify-center w-full h-full",
+                "absolute inset-0 flex flex-col items-center justify-center w-full h-full px-4 py-4",
                 flipped ? "opacity-0 pointer-events-none" : "",
               )}
               style={{ backfaceVisibility: "hidden" }}
@@ -179,7 +188,7 @@ export const PhotoCard = memo(function PhotoCard({
               <div className="relative w-full flex-1 flex items-center justify-center">
                 {/* 受け取りバッジ（拡大表示時） */}
                 {photo.photo_type === "received" && (
-                  <div className="absolute top-4 left-4 z-10 bg-blue-500 text-white text-sm px-3 py-1 rounded-full shadow-lg">
+                  <div className="absolute top-2 left-2 z-10 bg-blue-500 text-white text-sm px-3 py-1 rounded-full shadow-lg">
                     受け取り
                   </div>
                 )}
@@ -220,7 +229,7 @@ export const PhotoCard = memo(function PhotoCard({
             {/* 裏面（詳細情報） */}
             <div
               className={cn(
-                "absolute inset-0 flex flex-col items-center justify-center w-full h-full",
+                "absolute inset-0 flex flex-col items-center justify-center w-full h-full px-4 py-4",
                 flipped ? "opacity-100" : "opacity-0 pointer-events-none",
               )}
               style={{
@@ -230,66 +239,103 @@ export const PhotoCard = memo(function PhotoCard({
               onClick={handleFlip}
             >
               <div
-                className="bg-white rounded-[12px] shadow-lg w-full p-6 flex flex-col items-center justify-center"
+                className="bg-white rounded-[12px] shadow-lg w-full p-6 flex flex-col"
                 style={{
-                  aspectRatio: "1/1",
-                  maxWidth: "340px",
-                  margin: "32px auto 0 auto",
+                  maxWidth: "180px",
+                  margin: "0 auto",
                 }}
               >
-                <h2 className="text-lg font-bold mb-2">詳細情報</h2>
-                <ul className="text-sm space-y-2">
-                  {photo.receiver_name && <li>名前: {photo.receiver_name}</li>}
-                  <li>
-                    撮影日:{" "}
+                {/* Name section */}
+                {photo.receiver_name && (
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-6 h-6 flex items-center justify-center">
+                      <span className="text-black text-lg">👤</span>
+                    </div>
+                    <span className="text-lg text-black">
+                      {photo.receiver_name}
+                    </span>
+                  </div>
+                )}
+
+                {/* Location section */}
+                {photo.location && (
+                  <div className="flex items-center gap-4 mb-6">
+                    <MapPin className="w-6 h-6 text-black" strokeWidth={1.5} />
+                    <span className="text-lg text-black">
+                      {photo.location.address
+                        ? photo.location.address
+                        : `${photo.location.latitude.toFixed(4)}, ${photo.location.longitude.toFixed(4)}`}
+                    </span>
+                  </div>
+                )}
+
+                {/* Date section */}
+                <div className="flex items-center gap-4 mb-6">
+                  <Calendar className="w-6 h-6 text-black" strokeWidth={1.5} />
+                  <span className="text-lg text-black">
                     {photo.created_at.toLocaleDateString("ja-JP", {
-                      month: "short",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
                     })}
-                  </li>
-                  {photo.location && (
-                    <li>
-                      位置情報:{" "}
-                      {photo.location.address ??
-                        `${photo.location.latitude}, ${photo.location.longitude}`}
-                    </li>
-                  )}
-                  <li>
-                    受け取り:{" "}
+                  </span>
+                </div>
+
+                {/* Status section */}
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-6 h-6 flex items-center justify-center">
+                    {photo.is_received ? (
+                      <Check
+                        className="w-6 h-6 text-green-600"
+                        strokeWidth={1.5}
+                      />
+                    ) : (
+                      <Clock
+                        className="w-6 h-6 text-yellow-600"
+                        strokeWidth={1.5}
+                      />
+                    )}
+                  </div>
+                  <span className="text-lg text-black">
                     {photo.is_received ? "受け取り済み" : "未受け取り"}
-                  </li>
-                  {photo.received_at && (
-                    <li>
-                      受け取り日時:{" "}
-                      {photo.received_at.toLocaleDateString("ja-JP", {
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </li>
-                  )}
-                  <li>
-                    有効期限:{" "}
-                    {photo.expires_at.toLocaleDateString("ja-JP", {
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </li>
-                </ul>
-                <button
-                  className="mt-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleClose();
-                  }}
-                >
-                  閉じる
-                </button>
+                  </span>
+                </div>
+
+                {/* Memo section */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-4 mb-4">
+                    <FileText
+                      className="w-6 h-6 text-black"
+                      strokeWidth={1.5}
+                    />
+                    <span className="text-lg text-black">メモ</span>
+                  </div>
+
+                  {/* Memo text area */}
+                  <div className="relative">
+                    <div className="w-full h-16 border border-gray-400 rounded-md p-3 text-sm text-gray-600"></div>
+                    <Edit3
+                      className="absolute bottom-3 right-3 w-5 h-5 text-gray-600"
+                      strokeWidth={1.5}
+                    />
+                  </div>
+                </div>
+
+                {/* Submit button */}
+                <div className="flex justify-center">
+                  <button
+                    className="bg-[#603736] hover:bg-[#331515] text-white px-6 py-2 rounded-full flex items-center gap-2 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleClose();
+                    }}
+                  >
+                    <Hand className="w-4 h-4" strokeWidth={1.5} />
+                    <span className="text-sm font-medium">閉じる</span>
+                  </button>
+                </div>
               </div>
             </div>
-            {/* 下余白（チェキ風） */}
-            <div className="w-full h-8" />
           </div>
         </div>
       )}
