@@ -56,7 +56,7 @@ export async function GET(
 
     const { page, limit } = queryData;
 
-    // ユーザー写真一覧取得
+    // ユーザー写真一覧取得（撮影した写真 + 受け取った写真）
     const result = await getUserPhotos(userId, page, limit);
     const { photos, total, total_pages } = result;
 
@@ -83,9 +83,14 @@ export async function GET(
           }
         }
 
+        // 写真の種類を判定（撮影 or 受け取り）
+        const photoType = photo.user_id === userId ? "captured" : "received";
+
         return {
           ...photo,
           image_url: imageUrl,
+          photo_type: photoType, // 写真の種類
+          photographer_name: photo.photographer_name, // 撮影者名（受け取った写真の場合に表示）
         };
       }),
     );
