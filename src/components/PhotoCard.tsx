@@ -107,14 +107,25 @@ export const PhotoCard = memo(function PhotoCard({
             className="bg-white rounded-[12px] shadow-lg overflow-hidden flex items-center justify-center w-full"
             style={{ aspectRatio: "1/1", maxWidth: "180px" }}
           >
-            <Image
-              src={photo.image_url}
-              alt="cheki photo"
-              fill
-              className="object-cover"
-              sizes="(max-width: 600px) 60vw, 160px"
-              loading="lazy"
-            />
+            {imageError ||
+            !photo.image_url ||
+            photo.image_url.startsWith("supabase://") ? (
+              <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                <X className="w-8 h-8 text-gray-400" />
+              </div>
+            ) : (
+              <Image
+                src={photo.image_url}
+                alt="cheki photo"
+                fill
+                className="object-cover"
+                sizes="(max-width: 600px) 60vw, 160px"
+                loading="lazy"
+                unoptimized={true}
+                onError={() => setImageError(true)}
+                onLoad={() => setImageLoading(false)}
+              />
+            )}
           </div>
         </div>
         {/* 下余白（チェキ風） */}
@@ -157,14 +168,25 @@ export const PhotoCard = memo(function PhotoCard({
                     margin: "0 auto",
                   }}
                 >
-                  <Image
-                    src={photo.image_url}
-                    alt="cheki photo"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 600px) 60vw, 160px"
-                    loading="lazy"
-                  />
+                  {imageError ||
+                  !photo.image_url ||
+                  photo.image_url.startsWith("supabase://") ? (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                      <X className="w-8 h-8 text-gray-400" />
+                    </div>
+                  ) : (
+                    <Image
+                      src={photo.image_url}
+                      alt="cheki photo"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 600px) 60vw, 160px"
+                      loading="lazy"
+                      unoptimized={true}
+                      onError={() => setImageError(true)}
+                      onLoad={() => setImageLoading(false)}
+                    />
+                  )}
                 </div>
               </div>
               {/* 下余白（チェキ風） */}
