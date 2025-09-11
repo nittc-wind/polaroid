@@ -35,6 +35,17 @@ export interface User {
   image?: string | null;
 }
 
+// PhotoMemo型定義（メモと再会ステータス管理）
+export interface PhotoMemo {
+  id: string;
+  photo_id: string;
+  user_id: string;
+  memo: string | null;
+  is_reunited: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
 // ヘルパー関数
 export async function createPhoto(data: {
   device_id: string;
@@ -280,20 +291,29 @@ export async function getUserPhotos(
   `;
   const total = parseInt(countResult[0].count);
 
-  // データ取得（撮影者情報も含める）
+  // データ取得（メモ情報と撮影者情報も含める）
   const photos = await sql`
     SELECT 
       p.*,
-      u.handle_name as photographer_name
+      u.handle_name as photographer_name,
+      pm.memo,
+      pm.is_reunited,
+      pm.updated_at as memo_updated_at
     FROM photos p
     LEFT JOIN users u ON p.user_id = u.id
+    LEFT JOIN photo_memos pm ON p.id = pm.photo_id AND pm.user_id = ${userId}
     WHERE p.user_id = ${userId} OR p.receiver_user_id = ${userId}
     ORDER BY p.created_at DESC
     LIMIT ${limit} OFFSET ${offset}
   `;
 
   return {
-    photos: photos as (Photo & { photographer_name: string | null })[],
+    photos: photos as (Photo & {
+      photographer_name: string | null;
+      memo: string | null;
+      is_reunited: boolean | null;
+      memo_updated_at: Date | null;
+    })[],
     total,
     page,
     limit,
@@ -393,4 +413,116 @@ export async function cleanupExpiredPhotos() {
     DELETE FROM photos 
     WHERE expires_at < NOW()
   `;
+}
+
+// ========================================
+// PhotoMemo関連のDB関数
+// ========================================
+
+// PhotoMemo作成・更新（UPSERT）
+export async function upsertPhotoMemo(data: {
+  photo_id: string;
+  user_id: string;
+  memo?: string | null;
+  is_reunited?: boolean;
+}) {
+  const result = await sql`
+    INSERT INTO photo_memos (photo_id, user_id, memo, is_reunited)
+    VALUES (${data.photo_id}, ${data.user_id}, ${data.memo || null}, ${data.is_reunited || false})
+    ON CONFLICT (photo_id, user_id) 
+    DO UPDATE SET 
+      memo = EXCLUDED.memo,
+      is_reunited = EXCLUDED.is_reunited,
+      updated_at = CURRENT_TIMESTAMP
+    RETURNING *
+  `;
+
+  return result[0] as PhotoMemo;
+}
+
+// PhotoMemo取得（単一）
+export async function getPhotoMemo(photo_id: string, user_id: string) {
+  const result = await sql`
+    SELECT * FROM photo_memos 
+    WHERE photo_id = ${photo_id} AND user_id = ${user_id}
+    LIMIT 1
+  `;
+
+  return result[0] as PhotoMemo | undefined;
+}
+
+// 写真に対するすべてのメモ取得
+export async function getPhotoMemos(photo_id: string) {
+  const result = await sql`
+    SELECT pm.*, u.handle_name as user_handle_name
+    FROM photo_memos pm
+    JOIN users u ON pm.user_id = u.id
+    WHERE pm.photo_id = ${photo_id}
+    ORDER BY pm.created_at ASC
+  `;
+
+  return result as (PhotoMemo & { user_handle_name: string })[];
+}
+
+// ユーザーのメモ一覧取得（再会済みフィルタ可能）
+export async function getUserPhotoMemos(
+  user_id: string,
+  is_reunited?: boolean,
+  page: number = 1,
+  limit: number = 20,
+) {
+  const offset = (page - 1) * limit;
+
+  const whereClause =
+    is_reunited !== undefined
+      ? sql`WHERE pm.user_id = ${user_id} AND pm.is_reunited = ${is_reunited}`
+      : sql`WHERE pm.user_id = ${user_id}`;
+
+  const result = await sql`
+    SELECT pm.*, p.image_url, p.storage_path, p.created_at as photo_created_at,
+           p.receiver_name, p.is_received
+    FROM photo_memos pm
+    JOIN photos p ON pm.photo_id = p.id
+    ${whereClause}
+    ORDER BY pm.updated_at DESC
+    LIMIT ${limit} OFFSET ${offset}
+  `;
+
+  return result as (PhotoMemo & {
+    image_url: string;
+    storage_path: string;
+    photo_created_at: Date;
+    receiver_name: string | null;
+    is_received: boolean;
+  })[];
+}
+
+// メモ削除
+export async function deletePhotoMemo(photo_id: string, user_id: string) {
+  const result = await sql`
+    DELETE FROM photo_memos 
+    WHERE photo_id = ${photo_id} AND user_id = ${user_id}
+    RETURNING *
+  `;
+
+  return result[0] as PhotoMemo | undefined;
+}
+
+// 再会ステータスのみ更新
+export async function updateReunionStatus(
+  photo_id: string,
+  user_id: string,
+  is_reunited: boolean,
+) {
+  const result = await sql`
+    INSERT INTO photo_memos (photo_id, user_id, is_reunited)
+    VALUES (${photo_id}, ${user_id}, ${is_reunited})
+    ON CONFLICT (photo_id, user_id) 
+    DO UPDATE SET 
+      is_reunited = EXCLUDED.is_reunited,
+      updated_at = CURRENT_TIMESTAMP
+    RETURNING *
+  `;
+
+  return result[0] as PhotoMemo;
 }
