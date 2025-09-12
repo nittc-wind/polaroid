@@ -9,10 +9,35 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
 
 export default function HomePage() {
   const { isAuthenticated, isLoading } = useAuth();
+  const [logoError, setLogoError] = useState(false);
+
+  const LogoComponent = () => {
+    if (logoError) {
+      return (
+        <span className="text-[#331515] text-xl font-medium">
+          ともだちチェキ
+        </span>
+      );
+    }
+
+    return (
+      <Image
+        src="/logo.svg"
+        alt="ともだちチェキ"
+        width={120}
+        height={75}
+        className="mx-auto"
+        onError={() => setLogoError(true)}
+        priority
+      />
+    );
+  };
 
   // ローディング中の表示
   if (isLoading) {
@@ -21,8 +46,8 @@ export default function HomePage() {
         <div className="w-full max-w-sm">
           <Card className="bg-white rounded-2xl p-6 max-h-[85vh] flex flex-col">
             <CardHeader className="p-0 mb-6 text-center">
-              <CardTitle className="text-[#331515] text-xl font-medium mb-2">
-                ともだちチェキ
+              <CardTitle className="mb-2">
+                <LogoComponent />
               </CardTitle>
               <CardDescription className="text-[#737373] text-sm">
                 新しい名刺交換の形
@@ -42,11 +67,11 @@ export default function HomePage() {
       <div className="w-full max-w-sm">
         <Card className="bg-white rounded-2xl p-6 max-h-[85vh] flex flex-col">
           <CardHeader className="p-0 mb-6 text-center">
-            <CardTitle className="text-[#331515] text-xl font-medium mb-2">
-              ともだちチェキ
+            <CardTitle className="mb-2">
+              <LogoComponent />
             </CardTitle>
             <CardDescription className="text-[#737373] text-sm">
-              新しい名刺交換の形
+              「また会ったね！」のためのアプリ
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col justify-center p-0">
