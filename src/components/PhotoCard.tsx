@@ -11,7 +11,7 @@ import {
   Calendar,
   FileText,
   Edit3,
-  Hand,
+  HandMetal,
 } from "lucide-react";
 
 interface Photo {
@@ -110,6 +110,7 @@ export const PhotoCard = memo(function PhotoCard({
       bgColor: "bg-yellow-100",
     };
   };
+
   return (
     <>
       {/* 通常表示（小さいチェキ） */}
@@ -158,6 +159,7 @@ export const PhotoCard = memo(function PhotoCard({
         {/* 下余白（チェキ風） */}
         <div className="w-full h-6" />
       </div>
+
       {/* 拡大表示（チェキ枠ごと中央に大きく） */}
       {enlarged && (
         <div
@@ -226,6 +228,7 @@ export const PhotoCard = memo(function PhotoCard({
               {/* 下余白（チェキ風） */}
               <div className="w-full h-10" />
             </div>
+
             {/* 裏面（詳細情報） */}
             <div
               className={cn(
@@ -238,22 +241,15 @@ export const PhotoCard = memo(function PhotoCard({
               }}
               onClick={handleFlip}
             >
-              <div
-                className="bg-white rounded-[12px] shadow-lg w-full p-6 flex flex-col"
-                style={{
-                  maxWidth: "260px",
-                  margin: "0 auto",
-                }}
-              >
-                {/* Name section */}
+              <div className="w-full max-w-[260px]">
+                {/* Name section - centered */}
                 {photo.receiver_name && (
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-5 h-5 flex items-center justify-center">
-                      <span className="text-black text-base">👤</span>
-                    </div>
-                    <span className="text-base text-black">
+                  <div className="text-center mb-4">
+                    <span className="text-lg text-black font-medium">
                       {photo.receiver_name}
                     </span>
+                    {/* Divider line */}
+                    <div className="w-full h-px bg-gray-300 mt-3 mb-4"></div>
                   </div>
                 )}
 
@@ -280,6 +276,7 @@ export const PhotoCard = memo(function PhotoCard({
                     })}
                   </span>
                 </div>
+
                 {/* Memo section */}
                 <div className="mb-6">
                   <div className="flex items-center gap-3 mb-3">
@@ -309,8 +306,8 @@ export const PhotoCard = memo(function PhotoCard({
                       handleClose();
                     }}
                   >
-                    <Hand className="w-4 h-4" strokeWidth={1.5} />
-                    <span className="text-sm font-medium">閉じる</span>
+                    <HandMetal className="w-4 h-4" strokeWidth={1.5} />
+                    <span className="text-sm font-medium">再会</span>
                   </button>
                 </div>
               </div>
