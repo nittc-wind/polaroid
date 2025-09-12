@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { use } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,13 +22,121 @@ export default function CompletePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [imageLoadError, setImageLoadError] = useState<string | null>(null);
+  const [completeError, setCompleteError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [hasProcessedComplete, setHasProcessedComplete] = useState(false);
 
   // 認証状態の取得
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   // 共有フックを使用
-  const { photoData, loading, error } = usePhotoData(id);
+  const { photoData, loading, error, refetch } = usePhotoData(id);
+
+  // 完了画面用の自動受け取り処理
+  const processPhotoComplete = async (forceUserBinding = false) => {
+    if (isProcessing || hasProcessedComplete) return;
+
+    setIsProcessing(true);
+    setCompleteError(null);
+
+    try {
+      // 位置情報取得（オプショナル）
+      let locationData = null;
+      try {
+        const position = await new Promise<GeolocationPosition>(
+          (resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+          },
+        );
+        locationData = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        };
+      } catch {
+        console.log("位置情報の取得をスキップ");
+      }
+
+      // APIに送信
+      const requestBody: {
+        location: { latitude: number; longitude: number } | null;
+        receiverName?: string;
+      } = {
+        location: locationData,
+      };
+
+      // 未ログインユーザーの場合のみ名前を含める（初回時）
+      if (!isAuthenticated && !forceUserBinding) {
+        // デフォルトの受け取り者名を設定
+        requestBody.receiverName = "チェキの受け取り者";
+      }
+
+      const response = await fetch(`/api/photos/${id}/complete`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // エラーレスポンスの場合
+        if (response.status === 404) {
+          setCompleteError("写真が見つからないか、既に受け取り済みです");
+        } else if (response.status === 410) {
+          setCompleteError("写真の有効期限が切れています");
+        } else {
+          setCompleteError(data.error || "受け取り処理に失敗しました");
+        }
+        return;
+      }
+
+      // 成功時は写真データを更新
+      setHasProcessedComplete(true);
+      refetch(); // 写真データを再取得
+
+      // ログイン後の紐付け成功時はメッセージ表示
+      if (forceUserBinding && isAuthenticated) {
+        // 紐付け成功の一時的な表示など（必要に応じて）
+        console.log("アカウントとの紐付けが完了しました");
+      }
+    } catch (err) {
+      console.error("Complete processing failed:", err);
+      setCompleteError("受け取り処理中にエラーが発生しました");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // 初回レンダリング時の自動受け取り処理
+  useEffect(() => {
+    if (!loading && !error && photoData && !hasProcessedComplete) {
+      // URLパラメータから「ログイン後」かどうかを判定
+      const fromLogin = searchParams.get("from") === "login";
+
+      if (fromLogin && isAuthenticated) {
+        // ログイン後の場合：ユーザー紐付け処理
+        processPhotoComplete(true);
+      } else if (!photoData.receivedAt) {
+        // 未受け取りの場合：通常の受け取り処理
+        processPhotoComplete(false);
+      } else {
+        // 既に受け取り済みの場合
+        setHasProcessedComplete(true);
+      }
+    }
+  }, [
+    loading,
+    error,
+    photoData,
+    isAuthenticated,
+    hasProcessedComplete,
+    searchParams,
+  ]);
 
   // 画像の直接テスト用関数（デバッグ用）
   const testImageUrl = async (url: string) => {
@@ -95,8 +204,9 @@ export default function CompletePage({
   };
 
   const handleLoginAndAdd = () => {
-    // TODO: ログインして思い出に追加機能の実装
-    alert("ログインして思い出に追加機能は準備中です");
+    // ログイン画面にリダイレクト（完了画面URLを指定）
+    const redirectUrl = `/complete/${id}?from=login`;
+    window.location.href = `/auth/signin?redirect=${encodeURIComponent(redirectUrl)}`;
   };
 
   // ログイン状態に応じたアクションボタンをレンダリング
@@ -182,7 +292,7 @@ export default function CompletePage({
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col p-0">
-            {loading ? (
+            {loading || isProcessing ? (
               <div className="flex-1 flex items-center justify-center mb-6">
                 <div className="w-16 h-16 flex items-center justify-center">
                   <svg
@@ -199,16 +309,27 @@ export default function CompletePage({
                     <path d="M21 12a9 9 0 11-6.219-8.56" />
                   </svg>
                 </div>
+                {isProcessing && (
+                  <p className="text-[#737373] text-sm mt-2">
+                    受け取り処理中...
+                  </p>
+                )}
               </div>
-            ) : error ? (
+            ) : error || completeError ? (
               <div className="bg-red-50 border border-red-200 rounded-2xl aspect-[4/5] flex flex-col items-center justify-center mb-6 w-full p-4">
                 <div className="text-red-800 text-sm text-center mb-2">
-                  {error}
+                  {completeError || error}
                 </div>
                 <Button
                   onClick={() => {
-                    // 再取得処理をトリガー
-                    window.location.reload();
+                    if (completeError) {
+                      setCompleteError(null);
+                      setHasProcessedComplete(false);
+                      processPhotoComplete(false);
+                    } else {
+                      // 再取得処理をトリガー
+                      window.location.reload();
+                    }
                   }}
                   variant="outline"
                   size="sm"

@@ -2,6 +2,7 @@
 
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,10 +15,14 @@ import {
 import Link from "next/link";
 
 export default function SignInPage() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // リダイレクトURLの取得
+  const redirectUrl = searchParams.get("redirect") || "/";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,8 +40,8 @@ export default function SignInPage() {
       if (result?.error) {
         setError("メールアドレスまたはパスワードが正しくありません");
       } else if (result?.ok) {
-        // ログイン成功時、ホーム画面にリダイレクト
-        window.location.href = "/";
+        // ログイン成功時、指定されたURLまたはホーム画面にリダイレクト
+        window.location.href = redirectUrl;
       }
     } catch (error) {
       setError("ログインに失敗しました");
@@ -117,7 +122,7 @@ export default function SignInPage() {
                     アカウントをお持ちでない方は{" "}
                   </span>
                   <Link
-                    href="/auth/signup"
+                    href={`/auth/signup${redirectUrl !== "/" ? `?redirect=${encodeURIComponent(redirectUrl)}` : ""}`}
                     className="text-[#603736] hover:text-[#331515] text-sm font-medium hover:underline"
                   >
                     新規登録
