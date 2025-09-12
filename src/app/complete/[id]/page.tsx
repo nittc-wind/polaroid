@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { use } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -22,12 +22,56 @@ export default function CompletePage({
 }) {
   const { id } = use(params);
   const [imageLoadError, setImageLoadError] = useState<string | null>(null);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [completionError, setCompletionError] = useState<string | null>(null);
 
   // 認証状態の取得
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   // 共有フックを使用
   const { photoData, loading, error } = usePhotoData(id);
+
+  // 現像完了処理を実行
+  useEffect(() => {
+    const completePhoto = async () => {
+      if (isCompleting || completionError) return;
+
+      setIsCompleting(true);
+      try {
+        const response = await fetch(`/api/photos/${id}/complete`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.error?.message || "現像完了処理に失敗しました",
+          );
+        }
+
+        const result = await response.json();
+        if (!result.success) {
+          throw new Error("現像完了処理に失敗しました");
+        }
+
+        console.log("現像完了:", result);
+      } catch (error) {
+        console.error("現像完了エラー:", error);
+        setCompletionError(
+          error instanceof Error
+            ? error.message
+            : "現像完了処理中にエラーが発生しました",
+        );
+      } finally {
+        setIsCompleting(false);
+      }
+    };
+
+    completePhoto();
+  }, [id, isCompleting, completionError]);
 
   // 画像の直接テスト用関数（デバッグ用）
   const testImageUrl = async (url: string) => {
@@ -182,9 +226,27 @@ export default function CompletePage({
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col p-0">
-            {loading ? (
+            {/* 現像完了処理のエラー表示 */}
+            {completionError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                <div className="text-red-800 text-sm">{completionError}</div>
+                <Button
+                  onClick={() => {
+                    setCompletionError(null);
+                    setIsCompleting(false);
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 text-red-800 border-red-200 hover:bg-red-100"
+                >
+                  再試行
+                </Button>
+              </div>
+            )}
+
+            {loading || isCompleting ? (
               <div className="flex-1 flex items-center justify-center mb-6">
-                <div className="w-16 h-16 flex items-center justify-center">
+                <div className="w-16 h-16 flex items-center justify-center flex-col">
                   <svg
                     width="48"
                     height="48"
@@ -198,6 +260,9 @@ export default function CompletePage({
                   >
                     <path d="M21 12a9 9 0 11-6.219-8.56" />
                   </svg>
+                  <span className="text-xs text-[#737373] mt-2">
+                    {isCompleting ? "現像中..." : "読み込み中..."}
+                  </span>
                 </div>
               </div>
             ) : error ? (
