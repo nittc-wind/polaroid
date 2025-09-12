@@ -1,6 +1,14 @@
 import "@/app/globals.css";
 import type { Metadata, Viewport } from "next";
 import { Providers } from "@/components/Providers";
+import { Kiwi_Maru } from "next/font/google";
+
+const kiwiMaru = Kiwi_Maru({
+  weight: ["300", "400", "500"],
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-kiwi-maru",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -71,11 +79,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ja">
+    <html lang="ja" className={kiwiMaru.variable}>
       <head>
         <meta name="apple-mobile-web-app-title" content="ともだちチェキ" />
       </head>
-      <body className="min-h-screen flex flex-col">
+      <body className="min-h-screen flex flex-col font-kiwi-maru">
         <Providers>
           <main className="flex-1">{children}</main>
           <footer className="bg-[#dfc7c7] border-t p-4 text-center text-sm text-gray-600">
