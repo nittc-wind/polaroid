@@ -1,7 +1,6 @@
 import "@/app/globals.css";
 import type { Metadata, Viewport } from "next";
 import { Providers } from "@/components/Providers";
-import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 export const metadata: Metadata = {
   title: {
@@ -73,13 +72,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
+      <head>
+        <meta name="apple-mobile-web-app-title" content="ともだちチェキ" />
+      </head>
       <body className="min-h-screen flex flex-col">
         <Providers>
           <main className="flex-1">{children}</main>
           <footer className="bg-[#dfc7c7] border-t p-4 text-center text-sm text-gray-600">
             <p>&copy; 2025 ともだちチェキ</p>
           </footer>
-          <PWAInstallPrompt />
         </Providers>
       </body>
     </html>
