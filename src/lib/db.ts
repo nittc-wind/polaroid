@@ -275,7 +275,8 @@ export async function getUserStats(userId: string) {
   };
 }
 
-// ユーザーの写真一覧取得（撮影した写真 + 受け取った写真）
+// ユーザーの写真一覧取得（受け取り済みの写真のみ）
+// 撮影した写真で受け取り済み + 受け取った写真
 export async function getUserPhotos(
   userId: string,
   page: number = 1,
@@ -283,15 +284,17 @@ export async function getUserPhotos(
 ) {
   const offset = (page - 1) * limit;
 
-  // 総件数取得（撮影した写真 + 受け取った写真）
+  // 総件数取得（受け取り済みの写真のみ）
+  // 撮影した写真で受け取り済み、または受け取った写真
   const countResult = await sql`
     SELECT COUNT(*) as count 
     FROM photos 
-    WHERE user_id = ${userId} OR receiver_user_id = ${userId}
+    WHERE (user_id = ${userId} AND is_received = true) OR receiver_user_id = ${userId}
   `;
   const total = parseInt(countResult[0].count);
 
   // データ取得（メモ情報と撮影者情報も含める）
+  // 受け取り済みの写真のみを取得
   const photos = await sql`
     SELECT 
       p.*,
@@ -302,7 +305,7 @@ export async function getUserPhotos(
     FROM photos p
     LEFT JOIN users u ON p.user_id = u.id
     LEFT JOIN photo_memos pm ON p.id = pm.photo_id AND pm.user_id = ${userId}
-    WHERE p.user_id = ${userId} OR p.receiver_user_id = ${userId}
+    WHERE (p.user_id = ${userId} AND p.is_received = true) OR p.receiver_user_id = ${userId}
     ORDER BY p.created_at DESC
     LIMIT ${limit} OFFSET ${offset}
   `;

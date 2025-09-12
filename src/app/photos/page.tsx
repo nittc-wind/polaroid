@@ -18,11 +18,14 @@ import { useMemo } from "react";
 function MemoriesPage() {
   const { photos, loading, error, refresh } = useUserPhotos();
 
-  // 日付ごとにグループ化
+  // 受け取り済みの写真のみをフィルタリングして日付ごとにグループ化
   const groupedPhotos = useMemo(() => {
-    if (!photos.length) return [];
+    // 受け取り済みの写真のみフィルタリング
+    const receivedPhotos = photos.filter((photo) => photo.is_received);
+
+    if (!receivedPhotos.length) return [];
     const groups: Array<{ date: string; photos: typeof photos }> = [];
-    const photosByDate = photos.reduce(
+    const photosByDate = receivedPhotos.reduce(
       (acc, photo) => {
         const date = new Date(photo.created_at).toLocaleDateString("ja-JP", {
           year: "numeric",
@@ -79,6 +82,10 @@ function MemoriesPage() {
             ) : error ? (
               <div className="text-center text-red-500 py-8">
                 エラーが発生しました
+              </div>
+            ) : groupedPhotos.length === 0 ? (
+              <div className="text-center text-[#737373] py-8">
+                受け取り済みの写真がありません
               </div>
             ) : (
               <div className="space-y-6">

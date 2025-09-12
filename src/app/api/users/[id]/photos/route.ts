@@ -17,6 +17,7 @@ import { paginationSchema } from "@/lib/validation";
  * 認証: 必須
  * 権限: 本人のみ（プライベート写真のため）
  * 機能: ページネーション対応、作成日降順
+ * 対象: 受け取り済みの写真のみ（撮影した写真で受け取り済み + 受け取った写真）
  */
 export async function GET(
   request: NextRequest,
@@ -56,7 +57,8 @@ export async function GET(
 
     const { page, limit } = queryData;
 
-    // ユーザー写真一覧取得（撮影した写真 + 受け取った写真）
+    // ユーザー写真一覧取得（受け取り済みの写真のみ）
+    // 撮影した写真で受け取り済み + 受け取った写真
     const result = await getUserPhotos(userId, page, limit);
     const { photos, total, total_pages } = result;
 
