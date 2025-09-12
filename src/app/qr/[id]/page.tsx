@@ -43,15 +43,15 @@ function QRPage({ params }: { params: Promise<{ id: string }> }) {
       <div className="w-full max-w-sm">
         <Card className="bg-white rounded-2xl p-4 max-h-[90vh] flex flex-col">
           <CardHeader className="p-0 mb-3 text-center">
-            <CardTitle className="text-base font-medium text-[#0a0a0a]">
+            <CardTitle className="text-base font-medium text-[#331515]">
               QRコードを相手に見せてください
             </CardTitle>
             <CardDescription className="text-[#737373] text-xs">
-              相手は標準カメラでQRを読み取ってください
+              続きは相手のスマホで楽しもう
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col items-center gap-4 p-0">
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex items-center justify-center border-1 border-[#331515] rounded-xl p-6">
               {isLoading ? (
                 <div className="w-40 h-40 bg-gray-100 rounded-lg flex flex-col items-center justify-center">
                   <Loader2 className="w-8 h-8 animate-spin text-[#603736] mb-2" />
@@ -81,7 +81,7 @@ function QRPage({ params }: { params: Promise<{ id: string }> }) {
                 <img
                   src={qrCodeUrl}
                   alt="QRコード"
-                  className="w-40 h-40 max-w-[60vw] max-h-[30vh]"
+                  className="w-40 h-40 max-w-[60vw] max-h-[30vh] rounded-lg"
                   onError={() =>
                     setError("QRコード画像の読み込みに失敗しました")
                   }
@@ -90,28 +90,9 @@ function QRPage({ params }: { params: Promise<{ id: string }> }) {
                 <div className="w-40 h-40 bg-gray-200 animate-pulse rounded-lg" />
               )}
             </div>
-            <div className="w-full space-y-2">
-              <Button variant="ghost" className="w-full py-2" asChild>
-                <Link
-                  href="/camera"
-                  className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
-                >
-                  もう一度撮影する
-                </Link>
-              </Button>
-              <Button variant="ghost" className="w-full py-2" asChild>
-                <Link
-                  href="/photos"
-                  className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
-                >
-                  写真一覧を見る
-                </Link>
-              </Button>
-              <Button variant="ghost" className="w-full py-2" asChild>
-                <Link
-                  href="/"
-                  className="w-full block text-[#737373] hover:text-[#0a0a0a] text-sm"
-                >
+            <div className="space-y-2">
+              <Button className="bg-[#603736] py-2" asChild>
+                <Link href="/" className="block w-full">
                   ホームに戻る
                 </Link>
               </Button>

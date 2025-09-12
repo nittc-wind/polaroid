@@ -54,7 +54,7 @@ export default function SignInPage() {
               ともだちチェキ
             </CardTitle>
             <CardDescription className="text-[#737373] text-sm">
-              ログインして素敵な思い出を作りましょう
+              ともだちを集めよう
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-1 p-0">

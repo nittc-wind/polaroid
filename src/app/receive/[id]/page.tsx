@@ -152,7 +152,7 @@ export default function ReceivePage({
       <div className="w-full max-w-sm">
         <Card className="bg-white rounded-2xl p-4 max-h-[90vh] overflow-y-auto flex flex-col">
           <CardHeader className="p-0 mb-3 text-center">
-            <CardTitle className="text-base font-medium text-[#0a0a0a] mb-1">
+            <CardTitle className="text-base font-medium text-[#331515] mb-1">
               写真を受け取る
             </CardTitle>
             <CardDescription className="text-xs text-[#737373]">
@@ -178,8 +178,8 @@ export default function ReceivePage({
             )}
 
             <form onSubmit={handleSubmit}>
-              <div className="border border-[#e5e5e5] rounded-lg p-4 mb-6">
-                <h3 className="text-sm font-medium text-[#0a0a0a] mb-4">
+              <div className="border border-[#331515] rounded-lg p-4 mb-6">
+                <h3 className="text-sm font-medium text-[#331515] mb-4">
                   {isAuthenticated ? "受け取り設定" : "情報を入力"}
                 </h3>
 

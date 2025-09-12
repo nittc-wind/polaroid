@@ -174,7 +174,7 @@ export default function CompletePage({
       <div className="w-full max-w-sm">
         <Card className="bg-white rounded-2xl p-6 max-h-[90vh] flex flex-col">
           <CardHeader className="p-0 mb-6 text-center">
-            <CardTitle className="text-[#0a0a0a] text-lg font-medium mb-2">
+            <CardTitle className="text-[#331515] text-lg font-medium mb-2">
               現像が完了しました！
             </CardTitle>
             <CardDescription className="text-[#737373] text-sm">
