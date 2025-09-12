@@ -359,7 +359,8 @@ export async function getPhotosByDevice(device_id: string) {
   return result as Photo[];
 }
 
-export async function receivePhoto(
+// 受け取り情報をセット（is_receivedはfalseのまま）
+export async function setPhotoReceiver(
   id: string,
   data: {
     receiver_name?: string; // 未ログインユーザー用
@@ -372,13 +373,10 @@ export async function receivePhoto(
     const result = await sql`
       UPDATE photos 
       SET 
-        is_received = true,
         receiver_user_id = ${data.receiver_user_id},
         receiver_name = NULL,
-        received_at = NOW(),
         location = ${JSON.stringify(data.location) || null}
       WHERE id = ${id}
-        AND is_received = false
         AND expires_at > NOW()
       RETURNING *
     `;
@@ -390,13 +388,10 @@ export async function receivePhoto(
     const result = await sql`
       UPDATE photos 
       SET 
-        is_received = true,
         receiver_name = ${data.receiver_name},
         receiver_user_id = NULL,
-        received_at = NOW(),
         location = ${JSON.stringify(data.location) || null}
       WHERE id = ${id}
-        AND is_received = false
         AND expires_at > NOW()
       RETURNING *
     `;
@@ -405,6 +400,34 @@ export async function receivePhoto(
 
   // どちらも指定されていない場合はエラー
   throw new Error("Either receiver_name or receiver_user_id must be provided");
+}
+
+// 現像完了時にis_receivedをtrueに設定
+export async function completePhoto(id: string) {
+  const result = await sql`
+    UPDATE photos 
+    SET 
+      is_received = true,
+      received_at = NOW()
+    WHERE id = ${id}
+      AND expires_at > NOW()
+      AND (receiver_name IS NOT NULL OR receiver_user_id IS NOT NULL)
+    RETURNING *
+  `;
+  return result[0] as Photo | undefined;
+}
+
+// 旧バージョンとの互換性のため残しておく（非推奨）
+// @deprecated Use setPhotoReceiver instead
+export async function receivePhoto(
+  id: string,
+  data: {
+    receiver_name?: string;
+    receiver_user_id?: string;
+    location?: { latitude: number; longitude: number; address?: string };
+  },
+) {
+  return setPhotoReceiver(id, data);
 }
 
 // 期限切れ写真のクリーンアップ
