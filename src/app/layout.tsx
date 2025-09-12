@@ -83,10 +83,10 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-title" content="ともだちチェキ" />
       </head>
-      <body className="min-h-screen flex flex-col font-kiwi-maru">
+      <body className="h-screen overflow-hidden flex flex-col font-kiwi-maru">
         <Providers>
-          <main className="flex-1">{children}</main>
-          <footer className="bg-[#dfc7c7] border-t p-4 text-center text-sm text-gray-600">
+          <main className="flex-1 overflow-auto">{children}</main>
+          <footer className="flex-shrink-0 bg-[#dfc7c7] border-t p-4 text-center text-sm text-gray-600">
             <p>&copy; 2025 ともだちチェキ</p>
           </footer>
         </Providers>
