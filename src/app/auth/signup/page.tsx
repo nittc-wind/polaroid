@@ -73,7 +73,7 @@ export default function SignUpPage() {
               ともだちチェキ
             </CardTitle>
             <CardDescription className="text-[#737373] text-sm">
-              新しいアカウントを作成して始めましょう
+              ようこそ！
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-1 p-0">
