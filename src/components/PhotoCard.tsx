@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import {
@@ -12,7 +12,11 @@ import {
   FileText,
   Edit3,
   HandMetal,
+  Heart,
 } from "lucide-react";
+import { Button } from "./ui/button";
+import { usePhotoMemo } from "@/hooks/usePhotoMemo";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Photo {
   id: string;
@@ -29,8 +33,12 @@ interface Photo {
     longitude: number;
     address?: string;
   };
+  // メモ関連プロパティ（オプショナル）
+  photographer_name?: string | null;
+  memo?: string | null;
+  is_reunited?: boolean | null;
+  memo_updated_at?: Date | null;
   photo_type?: "captured" | "received"; // 写真の種類
-  photographer_name?: string; // 撮影者名
 }
 
 type PhotoCardProps = {
@@ -50,7 +58,37 @@ export const PhotoCard = memo(function PhotoCard({
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
 
+  // メモ機能
+  const [memoText, setMemoText] = useState("");
+  const [isEditingMemo, setIsEditingMemo] = useState(false);
+  const { isAuthenticated } = useAuth();
+  const {
+    memoData,
+    loading: memoLoading,
+    error: memoError,
+    saveMemo,
+    deleteMemo,
+    toggleReunion,
+    refresh,
+  } = usePhotoMemo(photo.id);
+
   const isExpired = new Date() > photo.expires_at;
+
+  // メモデータの初期化
+  useEffect(() => {
+    if (enlarged && isAuthenticated) {
+      refresh();
+    }
+  }, [enlarged, isAuthenticated, refresh]);
+
+  // メモテキストの同期
+  useEffect(() => {
+    if (memoData?.memo) {
+      setMemoText(memoData.memo);
+    } else {
+      setMemoText("");
+    }
+  }, [memoData?.memo]);
 
   const handleCardClick = () => {
     setEnlarged(true);
@@ -65,6 +103,28 @@ export const PhotoCard = memo(function PhotoCard({
     if (e) e.stopPropagation();
     setEnlarged(false);
     setFlipped(false);
+    setIsEditingMemo(false);
+  };
+
+  // メモ保存処理
+  const handleSaveMemo = async () => {
+    if (!memoText.trim()) {
+      await deleteMemo();
+    } else {
+      await saveMemo(memoText.trim());
+    }
+    setIsEditingMemo(false);
+  };
+
+  // メモ編集キャンセル
+  const handleCancelMemo = () => {
+    setMemoText(memoData?.memo || "");
+    setIsEditingMemo(false);
+  };
+
+  // 再会ボタンクリック
+  const handleReunionToggle = async () => {
+    await toggleReunion();
   };
 
   // 画像URL決定ロジック
@@ -123,6 +183,14 @@ export const PhotoCard = memo(function PhotoCard({
         style={{ aspectRatio: "3/4", perspective: "1000px" }}
         onClick={handleCardClick}
       >
+        {/* 再会バッジ */}
+        {(memoData?.is_reunited || photo.is_reunited) && (
+          <div className="absolute top-2 right-2 z-10 bg-red-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 shadow-md">
+            <Heart className="w-3 h-3 fill-current" />
+            <span>再会済み</span>
+          </div>
+        )}
+
         <div className="relative w-full flex-1 flex items-center justify-center">
           {/* 受け取りバッジ（左上） */}
           {photo.photo_type === "received" && (
@@ -277,7 +345,7 @@ export const PhotoCard = memo(function PhotoCard({
                   </span>
                 </div>
 
-                {/* Memo section */}
+                {/* Memo section - 認証状態に応じて機能的なメモまたは静的なメモを表示 */}
                 <div className="mb-6">
                   <div className="flex items-center gap-3 mb-3">
                     <FileText
@@ -287,28 +355,150 @@ export const PhotoCard = memo(function PhotoCard({
                     <span className="text-base text-black">メモ</span>
                   </div>
 
-                  {/* Memo text area */}
-                  <div className="relative">
-                    <div className="w-full h-14 border border-gray-400 rounded-md p-2 text-xs text-gray-600"></div>
-                    <Edit3
-                      className="absolute bottom-2 right-2 w-4 h-4 text-gray-600"
-                      strokeWidth={1.5}
-                    />
-                  </div>
+                  {isAuthenticated ? (
+                    /* 認証済み：機能的なメモエリア */
+                    <>
+                      {isEditingMemo ? (
+                        <div className="space-y-2">
+                          <textarea
+                            value={memoText}
+                            onChange={(e) => setMemoText(e.target.value)}
+                            placeholder="200文字以内でメモを入力..."
+                            className="w-full h-14 px-3 py-2 border border-gray-400 rounded-md text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#603736] focus:border-transparent"
+                            maxLength={200}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-gray-500">
+                              {memoText.length}/200
+                            </span>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCancelMemo();
+                                }}
+                                disabled={memoLoading}
+                                className="text-xs px-2 py-1 h-auto"
+                              >
+                                キャンセル
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSaveMemo();
+                                }}
+                                disabled={memoLoading}
+                                className="text-xs px-2 py-1 h-auto bg-[#603736] hover:bg-[#603736]/90"
+                              >
+                                保存
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          className="relative cursor-text"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsEditingMemo(true);
+                          }}
+                        >
+                          <div className="w-full h-14 border border-gray-400 rounded-md p-2 text-xs text-gray-600 flex items-start">
+                            {memoData?.memo ? (
+                              <span className="whitespace-pre-wrap">
+                                {memoData.memo}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">
+                                タップしてメモを追加...
+                              </span>
+                            )}
+                          </div>
+                          <Edit3
+                            className="absolute bottom-2 right-2 w-4 h-4 text-gray-600"
+                            strokeWidth={1.5}
+                          />
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    /* 未認証：静的なメモエリア */
+                    <div className="relative">
+                      <div className="w-full h-14 border border-gray-400 rounded-md p-2 text-xs text-gray-600 flex items-start">
+                        {photo.memo ? (
+                          <span className="whitespace-pre-wrap">
+                            {photo.memo}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">
+                            メモはありません
+                          </span>
+                        )}
+                      </div>
+                      <Edit3
+                        className="absolute bottom-2 right-2 w-4 h-4 text-gray-600"
+                        strokeWidth={1.5}
+                      />
+                    </div>
+                  )}
+
+                  {/* エラー表示 */}
+                  {memoError && (
+                    <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-600">
+                      {memoError}
+                    </div>
+                  )}
                 </div>
 
-                {/* Submit button */}
+                {/* Submit button - 認証状態に応じて機能的な再会ボタンまたは静的なボタンを表示 */}
                 <div className="flex justify-center">
-                  <button
-                    className="bg-[#603736] hover:bg-[#331515] text-white px-4 py-2 rounded-full flex items-center gap-2 transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleClose();
-                    }}
-                  >
-                    <HandMetal className="w-4 h-4" strokeWidth={1.5} />
-                    <span className="text-sm font-medium">再会</span>
-                  </button>
+                  {isAuthenticated ? (
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReunionToggle();
+                      }}
+                      disabled={memoLoading}
+                      className={cn(
+                        "px-4 py-2 rounded-full flex items-center gap-2 transition-colors",
+                        memoData?.is_reunited
+                          ? "bg-red-500 hover:bg-red-600 text-white"
+                          : "bg-[#603736] hover:bg-[#331515] text-white",
+                      )}
+                    >
+                      {memoData?.is_reunited ? (
+                        <>
+                          <Heart
+                            className="w-4 h-4 fill-current"
+                            strokeWidth={1.5}
+                          />
+                          <span className="text-sm font-medium">再会済み</span>
+                        </>
+                      ) : (
+                        <>
+                          <HandMetal className="w-4 h-4" strokeWidth={1.5} />
+                          <span className="text-sm font-medium">再会</span>
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <button
+                      className="bg-[#603736] hover:bg-[#331515] text-white px-4 py-2 rounded-full flex items-center gap-2 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClose();
+                      }}
+                    >
+                      <HandMetal className="w-4 h-4" strokeWidth={1.5} />
+                      <span className="text-sm font-medium">
+                        {photo.is_reunited ? "再会済み" : "再会"}
+                      </span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

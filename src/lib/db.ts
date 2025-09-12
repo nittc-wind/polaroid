@@ -35,6 +35,17 @@ export interface User {
   image?: string | null;
 }
 
+// PhotoMemo型定義（メモと再会ステータス管理）
+export interface PhotoMemo {
+  id: string;
+  photo_id: string;
+  user_id: string;
+  memo: string | null;
+  is_reunited: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
 // ヘルパー関数
 export async function createPhoto(data: {
   device_id: string;
@@ -264,7 +275,8 @@ export async function getUserStats(userId: string) {
   };
 }
 
-// ユーザーの写真一覧取得（撮影した写真 + 受け取った写真）
+// ユーザーの写真一覧取得（受け取り済みの写真のみ）
+// 撮影した写真で受け取り済み + 受け取った写真
 export async function getUserPhotos(
   userId: string,
   page: number = 1,
@@ -272,28 +284,39 @@ export async function getUserPhotos(
 ) {
   const offset = (page - 1) * limit;
 
-  // 総件数取得（撮影した写真 + 受け取った写真）
+  // 総件数取得（受け取り済みの写真のみ）
+  // 撮影した写真で受け取り済み、または受け取った写真
   const countResult = await sql`
     SELECT COUNT(*) as count 
     FROM photos 
-    WHERE user_id = ${userId} OR receiver_user_id = ${userId}
+    WHERE (user_id = ${userId} AND is_received = true) OR receiver_user_id = ${userId}
   `;
   const total = parseInt(countResult[0].count);
 
-  // データ取得（撮影者情報も含める）
+  // データ取得（メモ情報と撮影者情報も含める）
+  // 受け取り済みの写真のみを取得
   const photos = await sql`
     SELECT 
       p.*,
-      u.handle_name as photographer_name
+      u.handle_name as photographer_name,
+      pm.memo,
+      pm.is_reunited,
+      pm.updated_at as memo_updated_at
     FROM photos p
     LEFT JOIN users u ON p.user_id = u.id
-    WHERE p.user_id = ${userId} OR p.receiver_user_id = ${userId}
+    LEFT JOIN photo_memos pm ON p.id = pm.photo_id AND pm.user_id = ${userId}
+    WHERE (p.user_id = ${userId} AND p.is_received = true) OR p.receiver_user_id = ${userId}
     ORDER BY p.created_at DESC
     LIMIT ${limit} OFFSET ${offset}
   `;
 
   return {
-    photos: photos as (Photo & { photographer_name: string | null })[],
+    photos: photos as (Photo & {
+      photographer_name: string | null;
+      memo: string | null;
+      is_reunited: boolean | null;
+      memo_updated_at: Date | null;
+    })[],
     total,
     page,
     limit,
@@ -339,7 +362,8 @@ export async function getPhotosByDevice(device_id: string) {
   return result as Photo[];
 }
 
-export async function receivePhoto(
+// 受け取り情報をセット（is_receivedはfalseのまま）
+export async function setPhotoReceiver(
   id: string,
   data: {
     receiver_name?: string; // 未ログインユーザー用
@@ -352,13 +376,10 @@ export async function receivePhoto(
     const result = await sql`
       UPDATE photos 
       SET 
-        is_received = true,
         receiver_user_id = ${data.receiver_user_id},
         receiver_name = NULL,
-        received_at = NOW(),
         location = ${JSON.stringify(data.location) || null}
       WHERE id = ${id}
-        AND is_received = false
         AND expires_at > NOW()
       RETURNING *
     `;
@@ -370,13 +391,10 @@ export async function receivePhoto(
     const result = await sql`
       UPDATE photos 
       SET 
-        is_received = true,
         receiver_name = ${data.receiver_name},
         receiver_user_id = NULL,
-        received_at = NOW(),
         location = ${JSON.stringify(data.location) || null}
       WHERE id = ${id}
-        AND is_received = false
         AND expires_at > NOW()
       RETURNING *
     `;
@@ -387,10 +405,150 @@ export async function receivePhoto(
   throw new Error("Either receiver_name or receiver_user_id must be provided");
 }
 
+// 現像完了時にis_receivedをtrueに設定
+export async function completePhoto(id: string) {
+  const result = await sql`
+    UPDATE photos 
+    SET 
+      is_received = true,
+      received_at = NOW()
+    WHERE id = ${id}
+      AND expires_at > NOW()
+      AND (receiver_name IS NOT NULL OR receiver_user_id IS NOT NULL)
+    RETURNING *
+  `;
+  return result[0] as Photo | undefined;
+}
+
+// 旧バージョンとの互換性のため残しておく（非推奨）
+// @deprecated Use setPhotoReceiver instead
+export async function receivePhoto(
+  id: string,
+  data: {
+    receiver_name?: string;
+    receiver_user_id?: string;
+    location?: { latitude: number; longitude: number; address?: string };
+  },
+) {
+  return setPhotoReceiver(id, data);
+}
+
 // 期限切れ写真のクリーンアップ
 export async function cleanupExpiredPhotos() {
   await sql`
     DELETE FROM photos 
     WHERE expires_at < NOW()
   `;
+}
+
+// ========================================
+// PhotoMemo関連のDB関数
+// ========================================
+
+// PhotoMemo作成・更新（UPSERT）
+export async function upsertPhotoMemo(data: {
+  photo_id: string;
+  user_id: string;
+  memo?: string | null;
+  is_reunited?: boolean;
+}) {
+  const result = await sql`
+    INSERT INTO photo_memos (photo_id, user_id, memo, is_reunited)
+    VALUES (${data.photo_id}, ${data.user_id}, ${data.memo || null}, ${data.is_reunited || false})
+    ON CONFLICT (photo_id, user_id) 
+    DO UPDATE SET 
+      memo = EXCLUDED.memo,
+      is_reunited = EXCLUDED.is_reunited,
+      updated_at = CURRENT_TIMESTAMP
+    RETURNING *
+  `;
+
+  return result[0] as PhotoMemo;
+}
+
+// PhotoMemo取得（単一）
+export async function getPhotoMemo(photo_id: string, user_id: string) {
+  const result = await sql`
+    SELECT * FROM photo_memos 
+    WHERE photo_id = ${photo_id} AND user_id = ${user_id}
+    LIMIT 1
+  `;
+
+  return result[0] as PhotoMemo | undefined;
+}
+
+// 写真に対するすべてのメモ取得
+export async function getPhotoMemos(photo_id: string) {
+  const result = await sql`
+    SELECT pm.*, u.handle_name as user_handle_name
+    FROM photo_memos pm
+    JOIN users u ON pm.user_id = u.id
+    WHERE pm.photo_id = ${photo_id}
+    ORDER BY pm.created_at ASC
+  `;
+
+  return result as (PhotoMemo & { user_handle_name: string })[];
+}
+
+// ユーザーのメモ一覧取得（再会済みフィルタ可能）
+export async function getUserPhotoMemos(
+  user_id: string,
+  is_reunited?: boolean,
+  page: number = 1,
+  limit: number = 20,
+) {
+  const offset = (page - 1) * limit;
+
+  const whereClause =
+    is_reunited !== undefined
+      ? sql`WHERE pm.user_id = ${user_id} AND pm.is_reunited = ${is_reunited}`
+      : sql`WHERE pm.user_id = ${user_id}`;
+
+  const result = await sql`
+    SELECT pm.*, p.image_url, p.storage_path, p.created_at as photo_created_at,
+           p.receiver_name, p.is_received
+    FROM photo_memos pm
+    JOIN photos p ON pm.photo_id = p.id
+    ${whereClause}
+    ORDER BY pm.updated_at DESC
+    LIMIT ${limit} OFFSET ${offset}
+  `;
+
+  return result as (PhotoMemo & {
+    image_url: string;
+    storage_path: string;
+    photo_created_at: Date;
+    receiver_name: string | null;
+    is_received: boolean;
+  })[];
+}
+
+// メモ削除
+export async function deletePhotoMemo(photo_id: string, user_id: string) {
+  const result = await sql`
+    DELETE FROM photo_memos 
+    WHERE photo_id = ${photo_id} AND user_id = ${user_id}
+    RETURNING *
+  `;
+
+  return result[0] as PhotoMemo | undefined;
+}
+
+// 再会ステータスのみ更新
+export async function updateReunionStatus(
+  photo_id: string,
+  user_id: string,
+  is_reunited: boolean,
+) {
+  const result = await sql`
+    INSERT INTO photo_memos (photo_id, user_id, is_reunited)
+    VALUES (${photo_id}, ${user_id}, ${is_reunited})
+    ON CONFLICT (photo_id, user_id) 
+    DO UPDATE SET 
+      is_reunited = EXCLUDED.is_reunited,
+      updated_at = CURRENT_TIMESTAMP
+    RETURNING *
+  `;
+
+  return result[0] as PhotoMemo;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, LogOut } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -14,18 +14,18 @@ import { AuthGuard } from "@/components/auth/AuthGuard";
 import { PhotoGrid } from "@/components/PhotoGrid";
 import { useUserPhotos } from "@/hooks/useUserPhotos";
 import { useMemo } from "react";
-import { useAuth } from "@/hooks/useAuth";
 
 function MemoriesPage() {
-  const { photos, loading, error, hasMore, loadMore, refresh } =
-    useUserPhotos();
-  const { logout } = useAuth();
+  const { photos, loading, error, refresh } = useUserPhotos();
 
-  // 日付ごとにグループ化
+  // 受け取り済みの写真のみをフィルタリングして日付ごとにグループ化
   const groupedPhotos = useMemo(() => {
-    if (!photos.length) return [];
+    // 受け取り済みの写真のみフィルタリング
+    const receivedPhotos = photos.filter((photo) => photo.is_received);
+
+    if (!receivedPhotos.length) return [];
     const groups: Array<{ date: string; photos: typeof photos }> = [];
-    const photosByDate = photos.reduce(
+    const photosByDate = receivedPhotos.reduce(
       (acc, photo) => {
         const date = new Date(photo.created_at).toLocaleDateString("ja-JP", {
           year: "numeric",
@@ -53,37 +53,26 @@ function MemoriesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#dfc7c7] flex items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-53px)] bg-[#dfc7c7] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <Card className="bg-white rounded-2xl p-4 max-h-[90vh] flex flex-col">
-          <CardHeader className="p-0 mb-3 flex flex-row items-center justify-between">
-            <div className="flex flex-row items-center gap-2">
-              <Button className="w-fit p-1" variant="ghost" asChild>
-                <Link
-                  href="/"
-                  className="flex items-center text-[#737373] hover:text-[#0a0a0a]"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </Link>
-              </Button>
-              <div>
-                <CardTitle className="text-[#0a0a0a] text-base font-medium">
-                  思い出一覧
-                </CardTitle>
-                <CardDescription className="text-[#737373] text-xs">
-                  撮影した写真を見返す
-                </CardDescription>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={logout}
-              className="text-[#737373] hover:text-[#0a0a0a] p-1"
-              title="ログアウト"
-            >
-              <LogOut className="w-4 h-4" />
+          <CardHeader className="p-0 mb-3 flex flex-row items-center gap-2">
+            <Button className="w-fit p-1" variant="ghost" asChild>
+              <Link
+                href="/"
+                className="flex items-center text-[#737373] hover:text-[#0a0a0a]"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Link>
             </Button>
+            <div>
+              <CardTitle className="text-[#0a0a0a] text-base font-medium">
+                思い出一覧
+              </CardTitle>
+              <CardDescription className="text-[#737373] text-xs">
+                撮影した写真を見返す
+              </CardDescription>
+            </div>
           </CardHeader>
           <CardContent className="flex-1 p-0 overflow-y-auto">
             {loading ? (
@@ -93,6 +82,10 @@ function MemoriesPage() {
             ) : error ? (
               <div className="text-center text-red-500 py-8">
                 エラーが発生しました
+              </div>
+            ) : groupedPhotos.length === 0 ? (
+              <div className="text-center text-[#737373] py-8">
+                受け取り済みの写真がありません
               </div>
             ) : (
               <div className="space-y-6">
