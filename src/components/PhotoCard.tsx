@@ -3,7 +3,17 @@
 import { memo, useState, useEffect } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { Check, Clock, X, Heart, MessageSquare } from "lucide-react";
+import {
+  Check,
+  Clock,
+  X,
+  MapPin,
+  Calendar,
+  FileText,
+  Edit3,
+  HandMetal,
+  Heart,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { usePhotoMemo } from "@/hooks/usePhotoMemo";
 import { useAuth } from "@/hooks/useAuth";
@@ -160,6 +170,7 @@ export const PhotoCard = memo(function PhotoCard({
       bgColor: "bg-yellow-100",
     };
   };
+
   return (
     <>
       {/* 通常表示（小さいチェキ） */}
@@ -216,6 +227,7 @@ export const PhotoCard = memo(function PhotoCard({
         {/* 下余白（チェキ風） */}
         <div className="w-full h-6" />
       </div>
+
       {/* 拡大表示（チェキ枠ごと中央に大きく） */}
       {enlarged && (
         <div
@@ -284,10 +296,11 @@ export const PhotoCard = memo(function PhotoCard({
               {/* 下余白（チェキ風） */}
               <div className="w-full h-10" />
             </div>
+
             {/* 裏面（詳細情報） */}
             <div
               className={cn(
-                "absolute inset-0 flex flex-col items-center justify-center w-full h-full px-4 py-4",
+                "absolute inset-0 flex flex-col items-center justify-center w-full h-full px-2 py-4",
                 flipped ? "opacity-100" : "opacity-0 pointer-events-none",
               )}
               style={{
@@ -296,31 +309,62 @@ export const PhotoCard = memo(function PhotoCard({
               }}
               onClick={handleFlip}
             >
-              <div
-                className="bg-white rounded-[1px] shadow-lg w-full p-6 flex flex-col items-center justify-center"
-                style={{
-                  maxWidth: "180px",
-                  margin: "0 auto",
-                }}
-              >
-                {isAuthenticated ? (
-                  <>
-                    {/* メモ機能 */}
-                    <div className="w-full mb-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <MessageSquare className="w-4 h-4 text-[#603636]" />
-                        <h3 className="text-sm font-semibold text-[#603636]">
-                          メモ
-                        </h3>
-                      </div>
+              <div className="w-full max-w-[260px]">
+                {/* Name section - centered */}
+                {photo.receiver_name && (
+                  <div className="text-center mb-4">
+                    <span className="text-lg text-black font-medium">
+                      {photo.receiver_name}
+                    </span>
+                    {/* Divider line */}
+                    <div className="w-full h-px bg-gray-300 mt-3 mb-4"></div>
+                  </div>
+                )}
 
+                {/* Location section */}
+                {photo.location && (
+                  <div className="flex items-center gap-3 mb-4">
+                    <MapPin className="w-5 h-5 text-black" strokeWidth={1.5} />
+                    <span className="text-base text-black">
+                      {photo.location.address
+                        ? photo.location.address
+                        : `${photo.location.latitude.toFixed(4)}, ${photo.location.longitude.toFixed(4)}`}
+                    </span>
+                  </div>
+                )}
+
+                {/* Date section */}
+                <div className="flex items-center gap-3 mb-4">
+                  <Calendar className="w-5 h-5 text-black" strokeWidth={1.5} />
+                  <span className="text-base text-black">
+                    {photo.created_at.toLocaleDateString("ja-JP", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                    })}
+                  </span>
+                </div>
+
+                {/* Memo section - 認証状態に応じて機能的なメモまたは静的なメモを表示 */}
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <FileText
+                      className="w-5 h-5 text-black"
+                      strokeWidth={1.5}
+                    />
+                    <span className="text-base text-black">メモ</span>
+                  </div>
+
+                  {isAuthenticated ? (
+                    /* 認証済み：機能的なメモエリア */
+                    <>
                       {isEditingMemo ? (
                         <div className="space-y-2">
                           <textarea
                             value={memoText}
                             onChange={(e) => setMemoText(e.target.value)}
                             placeholder="200文字以内でメモを入力..."
-                            className="w-full h-20 px-3 py-2 border border-gray-300 rounded-md text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#603636] focus:border-transparent"
+                            className="w-full h-14 px-3 py-2 border border-gray-400 rounded-md text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#603736] focus:border-transparent"
                             maxLength={200}
                             onClick={(e) => e.stopPropagation()}
                           />
@@ -348,7 +392,7 @@ export const PhotoCard = memo(function PhotoCard({
                                   handleSaveMemo();
                                 }}
                                 disabled={memoLoading}
-                                className="text-xs px-2 py-1 h-auto bg-[#603636] hover:bg-[#603636]/90"
+                                className="text-xs px-2 py-1 h-auto bg-[#603736] hover:bg-[#603736]/90"
                               >
                                 保存
                               </Button>
@@ -357,162 +401,105 @@ export const PhotoCard = memo(function PhotoCard({
                         </div>
                       ) : (
                         <div
-                          className="min-h-[60px] p-3 border border-gray-200 rounded-md bg-gray-50 cursor-text"
+                          className="relative cursor-text"
                           onClick={(e) => {
                             e.stopPropagation();
                             setIsEditingMemo(true);
                           }}
                         >
-                          {memoData?.memo ? (
-                            <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                              {memoData.memo}
-                            </p>
-                          ) : (
-                            <p className="text-sm text-gray-400">
-                              タップしてメモを追加...
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* 再会ボタン */}
-                    <div className="w-full mb-4">
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleReunionToggle();
-                        }}
-                        disabled={memoLoading}
-                        className={cn(
-                          "w-full flex items-center justify-center gap-2",
-                          memoData?.is_reunited
-                            ? "bg-red-500 hover:bg-red-600 text-white"
-                            : "bg-gray-200 hover:bg-gray-300 text-gray-700",
-                        )}
-                      >
-                        <Heart
-                          className={cn(
-                            "w-4 h-4",
-                            memoData?.is_reunited && "fill-current",
-                          )}
-                        />
-                        {memoData?.is_reunited ? "再会済み" : "再会した！"}
-                      </Button>
-                    </div>
-
-                    {/* エラー表示 */}
-                    {memoError && (
-                      <div className="w-full mb-4 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-600">
-                        {memoError}
-                      </div>
-                    )}
-
-                    {/* 詳細情報 */}
-                    <div className="w-full mb-4">
-                      <h3 className="text-sm font-semibold text-[#603636] mb-2">
-                        詳細情報
-                      </h3>
-                      <div className="text-xs space-y-1 text-gray-600">
-                        {photo.receiver_name && (
-                          <div>名前: {photo.receiver_name}</div>
-                        )}
-                        <div>
-                          撮影日:{" "}
-                          {photo.created_at.toLocaleDateString("ja-JP", {
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </div>
-                        {photo.location && (
-                          <div>
-                            位置情報:{" "}
-                            {photo.location.address ??
-                              `${photo.location.latitude}, ${photo.location.longitude}`}
+                          <div className="w-full h-14 border border-gray-400 rounded-md p-2 text-xs text-gray-600 flex items-start">
+                            {memoData?.memo ? (
+                              <span className="whitespace-pre-wrap">
+                                {memoData.memo}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">
+                                タップしてメモを追加...
+                              </span>
+                            )}
                           </div>
-                        )}
-                        <div>
-                          受け取り:{" "}
-                          {photo.is_received ? "受け取り済み" : "未受け取り"}
+                          <Edit3
+                            className="absolute bottom-2 right-2 w-4 h-4 text-gray-600"
+                            strokeWidth={1.5}
+                          />
                         </div>
-                        {photo.received_at && (
-                          <div>
-                            受け取り日時:{" "}
-                            {photo.received_at.toLocaleDateString("ja-JP", {
-                              month: "short",
-                              day: "numeric",
-                            })}
-                          </div>
+                      )}
+                    </>
+                  ) : (
+                    /* 未認証：静的なメモエリア */
+                    <div className="relative">
+                      <div className="w-full h-14 border border-gray-400 rounded-md p-2 text-xs text-gray-600 flex items-start">
+                        {photo.memo ? (
+                          <span className="whitespace-pre-wrap">
+                            {photo.memo}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">
+                            メモはありません
+                          </span>
                         )}
-                        <div>
-                          有効期限:{" "}
-                          {photo.expires_at.toLocaleDateString("ja-JP", {
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </div>
                       </div>
+                      <Edit3
+                        className="absolute bottom-2 right-2 w-4 h-4 text-gray-600"
+                        strokeWidth={1.5}
+                      />
                     </div>
-                  </>
-                ) : (
-                  <>
-                    {/* 未ログイン時の詳細情報のみ */}
-                    <h2 className="text-lg font-bold mb-2">詳細情報</h2>
-                    <ul className="text-sm space-y-2">
-                      {photo.receiver_name && (
-                        <li>名前: {photo.receiver_name}</li>
-                      )}
-                      <li>
-                        撮影日:{" "}
-                        {photo.created_at.toLocaleDateString("ja-JP", {
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </li>
-                      {photo.location && (
-                        <li>
-                          位置情報:{" "}
-                          {photo.location.address ??
-                            `${photo.location.latitude}, ${photo.location.longitude}`}
-                        </li>
-                      )}
-                      <li>
-                        受け取り:{" "}
-                        {photo.is_received ? "受け取り済み" : "未受け取り"}
-                      </li>
-                      {photo.received_at && (
-                        <li>
-                          受け取り日時:{" "}
-                          {photo.received_at.toLocaleDateString("ja-JP", {
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </li>
-                      )}
-                      <li>
-                        有効期限:{" "}
-                        {photo.expires_at.toLocaleDateString("ja-JP", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </li>
-                    </ul>
-                  </>
-                )}
+                  )}
 
-                <button
-                  className="mt-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleClose();
-                  }}
-                >
-                  閉じる
-                </button>
+                  {/* エラー表示 */}
+                  {memoError && (
+                    <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-600">
+                      {memoError}
+                    </div>
+                  )}
+                </div>
+
+                {/* Submit button - 認証状態に応じて機能的な再会ボタンまたは静的なボタンを表示 */}
+                <div className="flex justify-center">
+                  {isAuthenticated ? (
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReunionToggle();
+                      }}
+                      disabled={memoLoading}
+                      className={cn(
+                        "px-4 py-2 rounded-full flex items-center gap-2 transition-colors",
+                        memoData?.is_reunited
+                          ? "bg-red-500 hover:bg-red-600 text-white"
+                          : "bg-[#603736] hover:bg-[#331515] text-white",
+                      )}
+                    >
+                      {memoData?.is_reunited ? (
+                        <>
+                          <Heart
+                            className="w-4 h-4 fill-current"
+                            strokeWidth={1.5}
+                          />
+                          <span className="text-sm font-medium">再会済み</span>
+                        </>
+                      ) : (
+                        <>
+                          <HandMetal className="w-4 h-4" strokeWidth={1.5} />
+                          <span className="text-sm font-medium">再会</span>
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <button
+                      className="bg-[#603736] hover:bg-[#331515] text-white px-4 py-2 rounded-full flex items-center gap-2 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClose();
+                      }}
+                    >
+                      <HandMetal className="w-4 h-4" strokeWidth={1.5} />
+                      <span className="text-sm font-medium">
+                        {photo.is_reunited ? "再会済み" : "再会"}
+                      </span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
