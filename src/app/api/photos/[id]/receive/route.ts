@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { setPhotoReceiver } from "@/lib/db";
+import { receivePhoto } from "@/lib/db";
 import { getPhotoSignedUrl } from "@/lib/supabase/storage";
 import {
   createErrorResponse,
@@ -65,12 +65,12 @@ export async function POST(
       };
     }
 
-    const updatedPhoto = await setPhotoReceiver(id, receiveData);
+    const updatedPhoto = await receivePhoto(id, receiveData);
 
     if (!updatedPhoto) {
       return createErrorResponse(
         ERROR_CODES.NOT_FOUND,
-        "写真が見つかりません",
+        "写真が見つからないか、既に受け取り済みです",
         404,
       );
     }
