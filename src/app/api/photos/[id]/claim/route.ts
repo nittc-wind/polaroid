@@ -94,10 +94,12 @@ export async function PUT(
     }
 
     // 写真をユーザーに紐付け（受取者として設定）
+    // receiver_nameをNULLにしてreceiver_user_idを設定（制約違反を回避）
     await sql`
       UPDATE photos 
       SET 
-        receiver_user_id = ${session.user.id}
+        receiver_user_id = ${session.user.id},
+        receiver_name = NULL
       WHERE id = ${id}
     `;
 

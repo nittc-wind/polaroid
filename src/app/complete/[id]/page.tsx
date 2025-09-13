@@ -45,6 +45,7 @@ export default function CompletePage({
   // 写真紐付けAPI呼び出し
   const claimPhoto = useCallback(async () => {
     try {
+      console.log("Starting photo claim for ID:", id);
       setClaimStatus((prev) => ({ ...prev, isProcessing: true, error: null }));
 
       const response = await fetch(`/api/photos/${id}/claim`, {
@@ -54,7 +55,9 @@ export default function CompletePage({
         },
       });
 
+      console.log("Claim API response status:", response.status);
       const result = await response.json();
+      console.log("Claim API response data:", result);
 
       if (!response.ok || !result.success) {
         throw new Error(result.error?.message || "写真の紐付けに失敗しました");
@@ -66,6 +69,7 @@ export default function CompletePage({
         error: null,
       });
 
+      console.log("Photo claim successful, refetching data...");
       // 写真データを再取得して最新状態を反映
       setTimeout(() => {
         refetch();
