@@ -48,6 +48,36 @@ export interface CreatePhotoResponse {
   error?: string;
 }
 
+// 画像処理関連の型定義
+export interface ImageFrameConfig {
+  /** 上部の枠の高さ（画像高さに対する割合 0-1） */
+  topRatio: number;
+  /** 左右の枠の幅（画像幅に対する割合 0-1） */
+  sideRatio: number;
+  /** 下部の枠の高さ（画像高さに対する割合 0-1） */
+  bottomRatio: number;
+  /** 枠の色 */
+  frameColor: string;
+}
+
+export interface ProcessedImageResult {
+  /** 処理済みの画像Blob */
+  blob: Blob;
+  /** 元の画像サイズ */
+  originalSize: { width: number; height: number };
+  /** 処理後の画像サイズ */
+  processedSize: { width: number; height: number };
+}
+
+export interface ImageProcessingProgress {
+  /** 現在の処理ステップ */
+  step: "capturing" | "processing" | "uploading" | "complete";
+  /** プログレスメッセージ */
+  message: string;
+  /** 進捗率 (0-100) */
+  progress: number;
+}
+
 export interface ReceivePhotoRequest {
   photoId: string;
   receiverName: string;
