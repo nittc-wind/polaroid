@@ -65,6 +65,7 @@ export async function GET(
       imageUrl,
       storagePath: photo.storage_path, // camelCaseに統一
       receiverName: photo.receiver_name,
+      receiverUserId: photo.receiver_user_id,
       receivedAt: photo.received_at,
       location: photo.location,
       createdAt: photo.created_at,

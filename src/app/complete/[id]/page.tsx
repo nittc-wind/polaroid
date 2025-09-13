@@ -37,7 +37,7 @@ export default function CompletePage({
   });
 
   // 認証状態の取得
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
 
   // 共有フックを使用
   const { photoData, loading, error, refetch } = usePhotoData(id);
@@ -235,19 +235,46 @@ export default function CompletePage({
         );
       }
 
-      // ログイン時: 思い出に追加済み（無効）+ ホームに戻る
+      // 既に紐付け済みかチェック
+      const isAlreadyClaimed = photoData?.receiverUserId === user?.id;
+
+      if (isAlreadyClaimed) {
+        // 既に紐付け済みの場合
+        return (
+          <div className="space-y-3 mb-6">
+            <div className="flex flex-row gap-3">
+              <Button
+                disabled={true}
+                className="flex-1 bg-green-600 text-white py-3 cursor-not-allowed"
+              >
+                思い出に追加済み
+              </Button>
+              <Button
+                asChild
+                className="flex-1 bg-[#603636] hover:bg-[#603636]/90 text-white py-3"
+              >
+                <Link href="/">ホームに戻る</Link>
+              </Button>
+            </div>
+          </div>
+        );
+      }
+
+      // ログイン時: 思い出に追加可能
       return (
         <div className="space-y-3 mb-6">
           <div className="flex flex-row gap-3">
             <Button
-              disabled={true}
-              className="flex-1 bg-gray-400 text-white py-3 cursor-not-allowed"
+              onClick={claimPhoto}
+              disabled={claimStatus.isProcessing}
+              className="flex-1 bg-[#603636] hover:bg-[#603636]/90 text-white py-3"
             >
-              思い出に追加済み
+              {claimStatus.isProcessing ? "追加中..." : "思い出に追加"}
             </Button>
             <Button
               asChild
-              className="flex-1 bg-[#603636] hover:bg-[#603636]/90 text-white py-3"
+              variant="outline"
+              className="flex-1 border-[#603636] text-[#603636] hover:bg-[#603636]/5 py-3"
             >
               <Link href="/">ホームに戻る</Link>
             </Button>

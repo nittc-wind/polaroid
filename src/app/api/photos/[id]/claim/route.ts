@@ -58,7 +58,7 @@ export async function PUT(
     }
 
     // 既に他のユーザーに紐付け済みかチェック
-    if (photo.user_id && photo.user_id !== session.user.id) {
+    if (photo.receiver_user_id && photo.receiver_user_id !== session.user.id) {
       return NextResponse.json(
         {
           success: false,
@@ -72,7 +72,7 @@ export async function PUT(
     }
 
     // 既に同じユーザーに紐付け済みの場合は成功レスポンス
-    if (photo.user_id === session.user.id) {
+    if (photo.receiver_user_id === session.user.id) {
       return NextResponse.json({
         success: true,
         data: { photo_id: id },
@@ -93,13 +93,11 @@ export async function PUT(
       );
     }
 
-    // 写真をユーザーに紐付け
+    // 写真をユーザーに紐付け（受取者として設定）
     await sql`
       UPDATE photos 
       SET 
-        user_id = ${session.user.id},
-        receiver_user_id = ${session.user.id},
-        updated_at = NOW()
+        receiver_user_id = ${session.user.id}
       WHERE id = ${id}
     `;
 

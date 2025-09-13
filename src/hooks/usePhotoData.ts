@@ -8,6 +8,7 @@ export interface PhotoData {
   imageUrl: string;
   storagePath?: string;
   receiverName: string | null;
+  receiverUserId: string | null;
   receivedAt: string | null;
   location: {
     latitude: number;
