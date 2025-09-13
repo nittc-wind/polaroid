@@ -41,7 +41,7 @@ function QRPage({ params }: { params: Promise<{ id: string }> }) {
   return (
     <div className="min-h-[calc(100vh-53px)] bg-[#dfc7c7] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <Card className="bg-white rounded-2xl p-4 max-h-[90vh] flex flex-col">
+        <Card className="shadow-none bg-white rounded-2xl p-4">
           <CardHeader className="p-0 mb-3 text-center">
             <CardTitle className="text-base font-medium text-[#331515]">
               QRコードを相手に見せてください
@@ -51,14 +51,18 @@ function QRPage({ params }: { params: Promise<{ id: string }> }) {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col items-center gap-4 p-0">
-            <div className="flex-1 flex items-center justify-center border-1 border-[#331515] rounded-xl p-6">
+            <div className="flex-1 flex items-center justify-center rounded-xl p-6">
               {isLoading ? (
-                <div className="w-40 h-40 bg-gray-100 rounded-lg flex flex-col items-center justify-center">
-                  <Loader2 className="w-8 h-8 animate-spin text-[#603736] mb-2" />
-                  <span className="text-sm text-gray-600">生成中...</span>
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="flex flex-col items-center justify-center">
+                    <Loader2 className="w-12 h-12 animate-spin text-[#603736] mb-3" />
+                    <span className="text-sm text-[#603736]">
+                      QRコード生成中...
+                    </span>
+                  </div>
                 </div>
               ) : error ? (
-                <div className="w-40 h-40 bg-red-50 border border-red-200 rounded-lg flex flex-col items-center justify-center p-4">
+                <div className="w-40 h-40 bg-red-50 rounded-lg flex flex-col items-center justify-center p-4">
                   <AlertCircle className="w-8 h-8 text-red-500 mb-2" />
                   <span className="text-xs text-red-800 text-center">
                     {error}

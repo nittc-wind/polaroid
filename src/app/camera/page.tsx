@@ -248,7 +248,7 @@ function CameraPage() {
                 >
                   <div className="flex-1 flex items-center justify-center w-full">
                     <div
-                      className="bg-white rounded-[12px] shadow-lg overflow-hidden flex items-center justify-center w-full"
+                      className="bg-white rounded-[12px] overflow-hidden flex items-center justify-center w-full"
                       style={{ aspectRatio: "1/1", maxWidth: "220px" }}
                     >
                       <div className="text-[#737373] text-sm">
