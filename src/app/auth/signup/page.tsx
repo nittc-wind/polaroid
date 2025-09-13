@@ -2,6 +2,7 @@
 
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,6 +20,10 @@ export default function SignUpPage() {
   const [handleName, setHandleName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl");
+  const shouldClaim = searchParams.get("claim") === "true";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,8 +59,17 @@ export default function SignUpPage() {
           setError("登録に失敗しました");
         }
       } else if (result?.ok) {
-        // 登録成功時、ホーム画面にリダイレクト
-        window.location.href = "/";
+        // 登録成功時の処理
+        if (returnUrl) {
+          // リダイレクト先が指定されている場合
+          const redirectUrl = shouldClaim
+            ? `${returnUrl}?claim=true`
+            : returnUrl;
+          window.location.href = redirectUrl;
+        } else {
+          // デフォルトはホーム画面にリダイレクト
+          window.location.href = "/";
+        }
       }
     } catch (error) {
       setError("登録に失敗しました");
@@ -157,7 +171,7 @@ export default function SignUpPage() {
                     既にアカウントをお持ちの方は{" "}
                   </span>
                   <Link
-                    href="/auth/signin"
+                    href={`/auth/signin${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}${shouldClaim ? "&claim=true" : ""}` : ""}`}
                     className="text-[#603736] hover:text-[#331515] text-sm font-medium hover:underline"
                   >
                     ログイン

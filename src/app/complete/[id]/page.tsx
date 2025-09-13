@@ -95,8 +95,9 @@ export default function CompletePage({
   };
 
   const handleLoginAndAdd = () => {
-    // TODO: ログインして思い出に追加機能の実装
-    alert("ログインして思い出に追加機能は準備中です");
+    // returnUrl とclaim パラメータ付きでログイン画面に遷移
+    const returnUrl = encodeURIComponent(`/complete/${id}`);
+    window.location.href = `/auth/signin?returnUrl=${returnUrl}&claim=true`;
   };
 
   // ログイン状態に応じたアクションボタンをレンダリング
