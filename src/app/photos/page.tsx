@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, LogOut } from "lucide-react";
+import { ArrowLeft, LogOut, RefreshCw } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -11,13 +11,13 @@ import {
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AuthGuard } from "@/components/auth/AuthGuard";
-import { PhotoGrid } from "@/components/PhotoGrid";
 import { useUserPhotos } from "@/hooks/useUserPhotos";
 import { useAuth } from "@/hooks/useAuth";
 import { useMemo } from "react";
 
 function MemoriesPage() {
-  const { photos, loading, error, refresh } = useUserPhotos();
+  const { photos, loading, error, hasMore, loadMore, refresh } =
+    useUserPhotos();
   const { logout } = useAuth();
 
   // 受け取り済みの写真のみをフィルタリングして日付ごとにグループ化
@@ -107,17 +107,43 @@ function MemoriesPage() {
                     <div className="text-[#603736] text-sm font-semibold mb-2 border-b border-[#e5e5e5] pb-1">
                       {group.date}
                     </div>
-                    <PhotoGrid
-                      photos={group.photos}
-                      loading={false}
-                      error={null}
-                      hasMore={false}
-                      onLoadMore={() => {}}
-                      onRefresh={refresh}
-                      onPhotoClick={handlePhotoClick}
-                    />
+                    <div className="grid grid-cols-3 gap-2">
+                      {group.photos.map((photo) => (
+                        <div
+                          key={photo.id}
+                          onClick={() => handlePhotoClick(photo)}
+                          className="aspect-square bg-gray-200 rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                        >
+                          <img
+                            src={photo.image_url}
+                            alt="思い出の写真"
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
+                {/* 全体のページネーション */}
+                {hasMore && (
+                  <div className="flex justify-center pt-4">
+                    <Button
+                      onClick={loadMore}
+                      variant="outline"
+                      disabled={loading}
+                      className="flex items-center gap-2"
+                    >
+                      {loading ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                          読み込み中...
+                        </>
+                      ) : (
+                        "さらに表示"
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
