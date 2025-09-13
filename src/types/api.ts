@@ -89,6 +89,16 @@ export interface Photo {
   } | null;
 }
 
+// 写真紐付けリクエスト型定義
+export interface PhotoClaimRequest {
+  photo_id: string;
+}
+
+// 写真紐付けレスポンス型定義
+export interface PhotoClaimResponse {
+  photo_id: string;
+}
+
 // 統計情報型定義
 export interface UserStats {
   total_photos: number;

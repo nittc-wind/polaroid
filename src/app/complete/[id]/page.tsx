@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { use } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -21,13 +22,88 @@ export default function CompletePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const searchParams = useSearchParams();
+  const shouldClaim = searchParams.get("claim") === "true";
+
   const [imageLoadError, setImageLoadError] = useState<string | null>(null);
+  const [claimStatus, setClaimStatus] = useState<{
+    isProcessing: boolean;
+    isSuccess: boolean;
+    error: string | null;
+  }>({
+    isProcessing: false,
+    isSuccess: false,
+    error: null,
+  });
 
   // 認証状態の取得
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
 
   // 共有フックを使用
-  const { photoData, loading, error } = usePhotoData(id);
+  const { photoData, loading, error, refetch } = usePhotoData(id);
+
+  // 写真紐付けAPI呼び出し
+  const claimPhoto = useCallback(async () => {
+    try {
+      setClaimStatus((prev) => ({ ...prev, isProcessing: true, error: null }));
+
+      const response = await fetch(`/api/photos/${id}/claim`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error?.message || "写真の紐付けに失敗しました");
+      }
+
+      setClaimStatus({
+        isProcessing: false,
+        isSuccess: true,
+        error: null,
+      });
+
+      // 写真データを再取得して最新状態を反映
+      setTimeout(() => {
+        refetch();
+      }, 500);
+    } catch (err) {
+      console.error("Photo claim error:", err);
+      setClaimStatus({
+        isProcessing: false,
+        isSuccess: false,
+        error:
+          err instanceof Error ? err.message : "写真の紐付けに失敗しました",
+      });
+    }
+  }, [id, refetch]); // 認証後の自動紐付け処理
+  useEffect(() => {
+    if (
+      shouldClaim &&
+      isAuthenticated &&
+      !authLoading &&
+      !claimStatus.isProcessing &&
+      !claimStatus.isSuccess
+    ) {
+      // URLからclaimパラメータを削除（ブラウザ履歴を汚さないため）
+      const url = new URL(window.location.href);
+      url.searchParams.delete("claim");
+      window.history.replaceState({}, "", url.toString());
+
+      // 写真紐付けを実行
+      claimPhoto();
+    }
+  }, [
+    shouldClaim,
+    isAuthenticated,
+    authLoading,
+    claimStatus.isProcessing,
+    claimStatus.isSuccess,
+    claimPhoto,
+  ]);
 
   // 画像の直接テスト用関数（デバッグ用）
   const testImageUrl = async (url: string) => {
@@ -95,13 +171,14 @@ export default function CompletePage({
   };
 
   const handleLoginAndAdd = () => {
-    // TODO: ログインして思い出に追加機能の実装
-    alert("ログインして思い出に追加機能は準備中です");
+    // returnUrl とclaim パラメータ付きでログイン画面に遷移
+    const returnUrl = encodeURIComponent(`/complete/${id}`);
+    window.location.href = `/auth/signin?returnUrl=${returnUrl}&claim=true`;
   };
 
   // ログイン状態に応じたアクションボタンをレンダリング
   const renderActionButtons = () => {
-    if (authLoading) {
+    if (authLoading || claimStatus.isProcessing) {
       return (
         <div className="space-y-3 mb-6">
           <div className="flex items-center justify-center py-8">
@@ -120,25 +197,79 @@ export default function CompletePage({
                 <path d="M21 12a9 9 0 11-6.219-8.56" />
               </svg>
             </div>
+            {claimStatus.isProcessing && (
+              <span className="ml-2 text-sm text-[#737373]">
+                思い出に追加中...
+              </span>
+            )}
           </div>
         </div>
       );
     }
 
     if (isAuthenticated) {
-      // ログイン時: 思い出に追加済み（無効）+ ホームに戻る
+      // 紐付け成功時の表示
+      if (claimStatus.isSuccess) {
+        return (
+          <div className="space-y-3 mb-6">
+            <div className="flex flex-row gap-3">
+              <Button
+                disabled={true}
+                className="flex-1 bg-green-600 text-white py-3 cursor-not-allowed"
+              >
+                思い出に追加済み
+              </Button>
+              <Button
+                asChild
+                className="flex-1 bg-[#603636] hover:bg-[#603636]/90 text-white py-3"
+              >
+                <Link href="/">ホームに戻る</Link>
+              </Button>
+            </div>
+          </div>
+        );
+      }
+
+      // 既に紐付け済みかチェック
+      const isAlreadyClaimed = photoData?.receiverUserId === user?.id;
+
+      if (isAlreadyClaimed) {
+        // 既に紐付け済みの場合
+        return (
+          <div className="space-y-3 mb-6">
+            <div className="flex flex-row gap-3">
+              <Button
+                disabled={true}
+                className="flex-1 bg-green-600 text-white py-3 cursor-not-allowed"
+              >
+                思い出に追加済み
+              </Button>
+              <Button
+                asChild
+                className="flex-1 bg-[#603636] hover:bg-[#603636]/90 text-white py-3"
+              >
+                <Link href="/">ホームに戻る</Link>
+              </Button>
+            </div>
+          </div>
+        );
+      }
+
+      // ログイン時: 思い出に追加可能
       return (
         <div className="space-y-3 mb-6">
           <div className="flex flex-row gap-3">
             <Button
-              disabled={true}
-              className="flex-1 bg-gray-400 text-white py-3 cursor-not-allowed"
+              onClick={claimPhoto}
+              disabled={claimStatus.isProcessing}
+              className="flex-1 bg-[#603636] hover:bg-[#603636]/90 text-white py-3"
             >
-              思い出に追加済み
+              {claimStatus.isProcessing ? "追加中..." : "思い出に追加"}
             </Button>
             <Button
               asChild
-              className="flex-1 bg-[#603636] hover:bg-[#603636]/90 text-white py-3"
+              variant="outline"
+              className="flex-1 border-[#603636] text-[#603636] hover:bg-[#603636]/5 py-3"
             >
               <Link href="/">ホームに戻る</Link>
             </Button>
@@ -146,6 +277,51 @@ export default function CompletePage({
         </div>
       );
     } else {
+      // 紐付けエラー時の表示
+      if (claimStatus.error) {
+        return (
+          <div className="space-y-3 mb-6">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+              <p className="text-red-800 text-sm text-center mb-2">
+                ❌ {claimStatus.error}
+              </p>
+              <div className="flex justify-center">
+                <Button
+                  onClick={() => {
+                    setClaimStatus({
+                      isProcessing: false,
+                      isSuccess: false,
+                      error: null,
+                    });
+                    claimPhoto();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="text-red-800 border-red-300 hover:bg-red-100"
+                >
+                  再試行
+                </Button>
+              </div>
+            </div>
+            <div className="flex flex-row gap-3">
+              <Button
+                onClick={handleLoginAndAdd}
+                className="flex-1 bg-[#603636] hover:bg-[#603636]/90 text-white py-3"
+              >
+                ログインして思い出に追加
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="flex-1 border-[#603636] text-[#603636] hover:bg-[#603636]/5 py-3"
+              >
+                <Link href="/">ホームに戻る</Link>
+              </Button>
+            </div>
+          </div>
+        );
+      }
+
       // 未ログイン時: ログインして思い出に追加 + ホームに戻る
       return (
         <div className="space-y-3 mb-6">
@@ -154,7 +330,7 @@ export default function CompletePage({
               onClick={handleLoginAndAdd}
               className="flex-1 bg-[#603636] hover:bg-[#603636]/90 text-white py-3"
             >
-              ログインして思い出に追加
+              ログインして追加
             </Button>
             <Button
               asChild

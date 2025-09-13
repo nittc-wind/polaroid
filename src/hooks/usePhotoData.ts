@@ -8,6 +8,7 @@ export interface PhotoData {
   imageUrl: string;
   storagePath?: string;
   receiverName: string | null;
+  receiverUserId: string | null;
   receivedAt: string | null;
   location: {
     latitude: number;
@@ -87,6 +88,7 @@ export function usePhotoData(id: string): UsePhotoDataResult {
 
       const photoData = result.data;
       console.log("Photo data retrieved:", photoData);
+      console.log("receiverUserId in photo data:", photoData.receiverUserId);
 
       // キャッシュに保存
       photoCache.set(id, {
