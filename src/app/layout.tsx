@@ -2,7 +2,6 @@ import "@/app/globals.css";
 import type { Metadata, Viewport } from "next";
 import { Providers } from "@/components/Providers";
 import { Kiwi_Maru } from "next/font/google";
-import Link from "next/link";
 
 const kiwiMaru = Kiwi_Maru({
   weight: ["300", "400", "500"],
@@ -89,7 +88,6 @@ export default function RootLayout({
           <main className="flex-1 overflow-auto">{children}</main>
           <footer className="flex-shrink-0 bg-[#dfc7c7] border-t p-4 text-center text-sm text-gray-600">
             <p>&copy; 2025 ともだちチェキ</p>
-            <Link href="/develop/[sample-id]"></Link>
           </footer>
         </Providers>
       </body>
