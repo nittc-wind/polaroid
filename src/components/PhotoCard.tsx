@@ -17,6 +17,7 @@ import {
 import { Button } from "./ui/button";
 import { usePhotoMemo } from "@/hooks/usePhotoMemo";
 import { useAuth } from "@/hooks/useAuth";
+import { reverseGeocode } from "@/lib/geocoding";
 
 interface Photo {
   id: string;
@@ -58,6 +59,10 @@ export const PhotoCard = memo(function PhotoCard({
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
 
+  // 位置情報取得のための状態
+  const [locationName, setLocationName] = useState<string | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+
   // メモ機能
   const [memoText, setMemoText] = useState("");
   const [isEditingMemo, setIsEditingMemo] = useState(false);
@@ -89,6 +94,28 @@ export const PhotoCard = memo(function PhotoCard({
       setMemoText("");
     }
   }, [memoData?.memo]);
+
+  // 位置情報の取得（拡大表示時のみ実行）
+  useEffect(() => {
+    if (photo.location && !photo.location.address && enlarged && flipped) {
+      const fetchLocationName = async () => {
+        setLocationLoading(true);
+        try {
+          const name = await reverseGeocode(
+            photo.location!.latitude,
+            photo.location!.longitude,
+          );
+          setLocationName(name);
+        } catch (error) {
+          console.error("Failed to fetch location:", error);
+        } finally {
+          setLocationLoading(false);
+        }
+      };
+
+      fetchLocationName();
+    }
+  }, [photo.location, enlarged, flipped]);
 
   const handleCardClick = () => {
     setEnlarged(true);
@@ -326,9 +353,11 @@ export const PhotoCard = memo(function PhotoCard({
                   <div className="flex items-center gap-3 mb-4">
                     <MapPin className="w-5 h-5 text-black" strokeWidth={1.5} />
                     <span className="text-base text-black">
-                      {photo.location.address
-                        ? photo.location.address
-                        : `${photo.location.latitude.toFixed(4)}, ${photo.location.longitude.toFixed(4)}`}
+                      {photo.location.address ||
+                        locationName ||
+                        (locationLoading
+                          ? "位置情報を取得中..."
+                          : `${photo.location.latitude.toFixed(4)}, ${photo.location.longitude.toFixed(4)}`)}
                     </span>
                   </div>
                 )}
