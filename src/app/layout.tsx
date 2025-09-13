@@ -38,18 +38,18 @@ export const metadata: Metadata = {
     description: "フィルムカメラ風写真アプリで思い出をシェアしよう",
     images: [
       {
-        url: "/icon-512x512.png",
-        width: 512,
-        height: 512,
-        alt: "Polaroid",
+        url: "/eyecatch.png",
+        width: 1200,
+        height: 630,
+        alt: "Polaroid - 思い出をシェア",
       },
     ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Polaroid - 思い出をシェア",
     description: "フィルムカメラ風写真アプリで思い出をシェアしよう",
-    images: ["/icon-512x512.png"],
+    images: ["/eyecatch.png"],
   },
   icons: {
     icon: [
