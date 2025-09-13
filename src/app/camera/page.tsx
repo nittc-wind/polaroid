@@ -12,6 +12,10 @@ import Link from "next/link";
 import { ArrowLeft, Camera, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import {
+  captureVideoFrameWithFrame,
+  isImageProcessingSupported,
+} from "@/lib/image-processing";
 
 function CameraPage() {
   const router = useRouter();
@@ -24,6 +28,7 @@ function CameraPage() {
   const [isPhotoTaken, setIsPhotoTaken] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<string>("");
+  const [isProcessingSupported, setIsProcessingSupported] = useState(true);
 
   // カメラ起動
   const startCamera = async () => {
@@ -69,6 +74,8 @@ function CameraPage() {
   // ページ読み込み時にカメラを自動起動
   useEffect(() => {
     startCamera();
+    // 画像処理サポートをチェック
+    setIsProcessingSupported(isImageProcessingSupported());
   }, []);
   // 撮影
   const capture = async () => {
@@ -79,76 +86,132 @@ function CameraPage() {
     setError(null);
     setUploadProgress("写真を準備中...");
 
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
+    try {
+      const video = videoRef.current;
 
-    if (!context) {
-      setIsUploading(false);
-      setError("Canvas の初期化に失敗しました");
-      return;
-    }
+      // 画像処理がサポートされている場合は枠付きで処理
+      if (isProcessingSupported) {
+        setUploadProgress("インスタントカメラ風の枠を追加中...");
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    context.drawImage(video, 0, 0);
+        const result = await captureVideoFrameWithFrame(video);
 
-    canvas.toBlob(
-      async (blob) => {
-        try {
-          if (!blob) {
-            setError("画像の生成に失敗しました");
-            return;
-          }
+        setUploadProgress("画像をアップロード中...");
+        const file = new File([result.blob], "photo.png", {
+          type: "image/png",
+        });
+        const formData = new FormData();
+        formData.append("image", file);
 
-          setUploadProgress("画像をアップロード中...");
-          const file = new File([blob], "photo.png", { type: "image/png" });
-          const formData = new FormData();
-          formData.append("image", file);
+        const res = await fetch("/api/photos", {
+          method: "POST",
+          body: formData,
+        });
 
-          const res = await fetch("/api/photos", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!res.ok) {
-            // 新しいエラーレスポンス形式に対応
-            try {
-              const errorData = await res.json();
-              if (errorData.error?.message) {
-                setError(
-                  `アップロードに失敗しました: ${errorData.error.message}`,
-                );
-              } else {
-                setError("アップロードに失敗しました");
-              }
-            } catch {
+        if (!res.ok) {
+          // 新しいエラーレスポンス形式に対応
+          try {
+            const errorData = await res.json();
+            if (errorData.error?.message) {
+              setError(
+                `アップロードに失敗しました: ${errorData.error.message}`,
+              );
+            } else {
               setError("アップロードに失敗しました");
             }
-            return;
+          } catch {
+            setError("アップロードに失敗しました");
           }
-
-          setUploadProgress("QRコードを生成中...");
-          // 新しい成功レスポンス形式に対応
-          const response = await res.json();
-          if (!response.success || !response.data?.id) {
-            setError("サーバーのレスポンスが不正です");
-            return;
-          }
-
-          // response.data が実際の photo オブジェクト
-          router.push(`/qr/${response.data.id}`);
-        } catch (err) {
-          console.error("アップロードエラー:", err);
-          setError("アップロード中にエラーが発生しました");
-        } finally {
-          setIsUploading(false);
-          setUploadProgress("");
+          return;
         }
-      },
-      "image/png",
-      0.92,
-    );
+
+        setUploadProgress("QRコードを生成中...");
+        // 新しい成功レスポンス形式に対応
+        const response = await res.json();
+        if (!response.success || !response.data?.id) {
+          setError("サーバーのレスポンスが不正です");
+          return;
+        }
+
+        // response.data が実際の photo オブジェクト
+        router.push(`/qr/${response.data.id}`);
+      } else {
+        // フォールバック: 従来のCanvas方式
+        setUploadProgress("写真を処理中...");
+
+        const canvas = canvasRef.current;
+        const context = canvas.getContext("2d");
+
+        if (!context) {
+          setError("Canvas の初期化に失敗しました");
+          return;
+        }
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0);
+
+        canvas.toBlob(
+          async (blob) => {
+            try {
+              if (!blob) {
+                setError("画像の生成に失敗しました");
+                return;
+              }
+
+              setUploadProgress("画像をアップロード中...");
+              const file = new File([blob], "photo.png", { type: "image/png" });
+              const formData = new FormData();
+              formData.append("image", file);
+
+              const res = await fetch("/api/photos", {
+                method: "POST",
+                body: formData,
+              });
+
+              if (!res.ok) {
+                try {
+                  const errorData = await res.json();
+                  if (errorData.error?.message) {
+                    setError(
+                      `アップロードに失敗しました: ${errorData.error.message}`,
+                    );
+                  } else {
+                    setError("アップロードに失敗しました");
+                  }
+                } catch {
+                  setError("アップロードに失敗しました");
+                }
+                return;
+              }
+
+              setUploadProgress("QRコードを生成中...");
+              const response = await res.json();
+              if (!response.success || !response.data?.id) {
+                setError("サーバーのレスポンスが不正です");
+                return;
+              }
+
+              router.push(`/qr/${response.data.id}`);
+            } catch (err) {
+              console.error("アップロードエラー:", err);
+              setError("アップロード中にエラーが発生しました");
+            }
+          },
+          "image/png",
+          0.92,
+        );
+      }
+    } catch (err) {
+      console.error("撮影エラー:", err);
+      setError(
+        err instanceof Error
+          ? `撮影中にエラーが発生しました: ${err.message}`
+          : "撮影中にエラーが発生しました",
+      );
+    } finally {
+      setIsUploading(false);
+      setUploadProgress("");
+    }
   };
   return (
     <div className="min-h-[calc(100vh-53px)] bg-[#dfc7c7] flex items-center justify-center p-4">
