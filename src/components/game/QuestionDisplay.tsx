@@ -44,33 +44,6 @@ export const QuestionDisplay = memo<QuestionDisplayProps>(
 
     return (
       <div className={baseClasses}>
-        {/* 質問番号とレベル情報 */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <span className="text-[#603736] text-sm font-medium">
-              質問 {questionNumber}/{totalQuestions}
-            </span>
-            {question.levelDescription && (
-              <span className="text-xs px-2 py-1 bg-[#603736] text-white rounded-full">
-                {question.levelDescription}
-              </span>
-            )}
-          </div>
-
-          {/* レベルインジケーター */}
-          <div className="flex items-center space-x-1">
-            {Array.from({ length: 5 }, (_, index) => (
-              <div
-                key={index}
-                className={`w-2 h-2 rounded-full transition-colors duration-200 ${
-                  index < question.level ? "bg-[#603736]" : "bg-[#e5e5e5]"
-                }`}
-                aria-label={`レベル ${index + 1}${index < question.level ? " (達成)" : ""}`}
-              />
-            ))}
-          </div>
-        </div>
-
         {/* 質問テキスト */}
         <div className="bg-gradient-to-r from-[#f8f6f6] to-[#f0eeee] rounded-xl p-4 border border-[#e5e5e5]">
           <h3 className="text-[#0a0a0a] text-base font-medium leading-relaxed text-center">
