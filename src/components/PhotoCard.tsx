@@ -173,14 +173,13 @@ export const PhotoCard = memo(function PhotoCard({
 
   return (
     <>
-      {/* 通常表示（小さいチェキ） */}
+      {/* 通常表示（写真のみ） */}
       <div
         className={cn(
-          "relative flex flex-col items-center bg-white rounded-[8px] shadow-xl border border-gray-100 py-4 px-2 w-full max-w-[220px] mx-auto cursor-pointer",
+          "relative cursor-pointer w-full max-w-[180px] mx-auto",
           className,
-          "cheki-card",
         )}
-        style={{ aspectRatio: "3/4", perspective: "1000px" }}
+        style={{ aspectRatio: "1/1" }}
         onClick={handleCardClick}
       >
         {/* 再会バッジ */}
@@ -191,41 +190,37 @@ export const PhotoCard = memo(function PhotoCard({
           </div>
         )}
 
-        <div className="relative w-full flex-1 flex items-center justify-center">
-          {/* 受け取りバッジ（左上） */}
-          {photo.photo_type === "received" && (
-            <div className="absolute top-2 left-2 z-10 bg-blue-500 text-white text-xs px-2 py-1 rounded-full shadow-lg">
-              受け取り
-            </div>
-          )}
-
-          <div
-            className="bg-white rounded-[12px] shadow-lg overflow-hidden flex items-center justify-center w-full"
-            style={{ aspectRatio: "1/1", maxWidth: "180px" }}
-          >
-            {imageError ||
-            !photo.image_url ||
-            photo.image_url.startsWith("supabase://") ? (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                <X className="w-8 h-8 text-gray-400" />
-              </div>
-            ) : (
-              <Image
-                src={photo.image_url}
-                alt="cheki photo"
-                fill
-                className="object-cover"
-                sizes="(max-width: 600px) 60vw, 160px"
-                loading="lazy"
-                unoptimized={true}
-                onError={() => setImageError(true)}
-                onLoad={() => setImageLoading(false)}
-              />
-            )}
+        {/* 受け取りバッジ（左上） */}
+        {photo.photo_type === "received" && (
+          <div className="absolute top-2 left-2 z-10 bg-blue-500 text-white text-xs px-2 py-1 rounded-full shadow-lg">
+            受け取り
           </div>
+        )}
+
+        <div
+          className="w-full h-full rounded-lg overflow-hidden flex items-center justify-center"
+          style={{ aspectRatio: "1/1" }}
+        >
+          {imageError ||
+          !photo.image_url ||
+          photo.image_url.startsWith("supabase://") ? (
+            <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-lg">
+              <X className="w-8 h-8 text-gray-400" />
+            </div>
+          ) : (
+            <Image
+              src={photo.image_url}
+              alt="photo"
+              fill
+              className="object-cover rounded-lg"
+              sizes="(max-width: 600px) 60vw, 160px"
+              loading="lazy"
+              unoptimized={true}
+              onError={() => setImageError(true)}
+              onLoad={() => setImageLoading(false)}
+            />
+          )}
         </div>
-        {/* 下余白（チェキ風） */}
-        <div className="w-full h-6" />
       </div>
 
       {/* 拡大表示（チェキ枠ごと中央に大きく） */}
