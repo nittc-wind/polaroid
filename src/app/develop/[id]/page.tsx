@@ -170,7 +170,7 @@ export default function DevelopPage() {
               <CardContent className="flex flex-col p-0">
                 {/* シンプルな完成写真表示 */}
                 <div className="flex items-center justify-center mb-6">
-                  <div className="w-full aspect-[4/5] bg-[#e5e5e5] rounded-2xl flex items-center justify-center relative overflow-hidden">
+                  <div className="w-48 h-48 bg-[#e5e5e5] rounded-2xl flex items-center justify-center relative overflow-hidden">
                     {imageLoadError ? (
                       <div className="absolute inset-0 bg-red-50 border border-red-200 rounded-2xl flex flex-col items-center justify-center p-4">
                         <div className="text-red-800 text-xs text-center mb-2">
@@ -193,7 +193,7 @@ export default function DevelopPage() {
                         alt="完成したチェキ"
                         fill
                         className="object-cover rounded-2xl"
-                        sizes="(max-width: 600px) 80vw, 300px"
+                        sizes="(max-width: 600px) 80vw, 180px"
                         unoptimized={true} // Supabase署名付きURL用に最適化を無効化
                         onError={(e) => {
                           console.error("Image load error:", e);
@@ -295,9 +295,9 @@ export default function DevelopPage() {
                 </div>
 
                 {/* 現像中のアニメーション表示エリア */}
-                <div className="flex-1 flex items-center justify-center mb-4">
+                <div className="flex items-center justify-center mb-4">
                   <div
-                    className="w-full aspect-[4/5] bg-[#e5e5e5] rounded-2xl flex items-center justify-center relative overflow-hidden"
+                    className="w-48 h-64 bg-[#e5e5e5] rounded-2xl flex items-center justify-center relative overflow-hidden"
                     style={{
                       opacity: Math.max(0.1, progress / 100),
                       filter: `blur(${Math.max(0, 10 - progress / 10)}px)`,
@@ -342,31 +342,6 @@ export default function DevelopPage() {
                         </div>
                       </div>
                     )}
-                    {/* プレースホルダーアイコン */}
-                    <div className="w-16 h-16 flex items-center justify-center">
-                      <svg
-                        width="48"
-                        height="48"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#737373"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className={`${isDeveloping ? "animate-pulse" : ""}`}
-                      >
-                        <rect
-                          x="3"
-                          y="3"
-                          width="18"
-                          height="18"
-                          rx="2"
-                          ry="2"
-                        />
-                        <circle cx="9" cy="9" r="2" />
-                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                      </svg>
-                    </div>
                     {/* 現像エフェクト */}
                     {isDeveloping && (
                       <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white to-transparent opacity-30 animate-pulse" />
