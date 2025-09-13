@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { use } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -43,7 +43,7 @@ export default function CompletePage({
   const { photoData, loading, error, refetch } = usePhotoData(id);
 
   // 写真紐付けAPI呼び出し
-  const claimPhoto = async () => {
+  const claimPhoto = useCallback(async () => {
     try {
       setClaimStatus((prev) => ({ ...prev, isProcessing: true, error: null }));
 
@@ -79,9 +79,7 @@ export default function CompletePage({
           err instanceof Error ? err.message : "写真の紐付けに失敗しました",
       });
     }
-  };
-
-  // 認証後の自動紐付け処理
+  }, [id, refetch]); // 認証後の自動紐付け処理
   useEffect(() => {
     if (
       shouldClaim &&
@@ -104,6 +102,7 @@ export default function CompletePage({
     authLoading,
     claimStatus.isProcessing,
     claimStatus.isSuccess,
+    claimPhoto,
   ]);
 
   // 画像の直接テスト用関数（デバッグ用）
@@ -272,6 +271,7 @@ export default function CompletePage({
                       isSuccess: false,
                       error: null,
                     });
+                    claimPhoto();
                   }}
                   variant="outline"
                   size="sm"
