@@ -15,7 +15,6 @@ import {
 import { usePhotoData } from "@/hooks/usePhotoData";
 import { useProfileGame } from "@/hooks/useProfileGame";
 import { QuestionDisplay } from "@/components/game/QuestionDisplay";
-import { NextQuestionButton } from "@/components/game/NextQuestionButton";
 
 export default function DevelopPage() {
   const params = useParams();
@@ -84,13 +83,6 @@ export default function DevelopPage() {
 
     return () => clearInterval(timer);
   };
-
-  // 現像プログレスとゲームの同期
-  useEffect(() => {
-    if (isGameActive) {
-      syncWithDevelopProgress(progress, isDeveloping);
-    }
-  }, [progress, isDeveloping, isGameActive, syncWithDevelopProgress]);
 
   // 現像完了時の自動ナビゲーション
   useEffect(() => {
@@ -373,18 +365,6 @@ export default function DevelopPage() {
                     )}
                   </div>
                 </div>
-
-                {/* 次の質問ボタン */}
-                {isGameActive && currentQuestion && (
-                  <div className="flex-shrink-0">
-                    <NextQuestionButton
-                      onClick={goToNextQuestion}
-                      hasNextQuestion={hasNextQuestion}
-                      isTransitioning={isTransitioning}
-                      isGameCompleted={gameState.isGameCompleted}
-                    />
-                  </div>
-                )}
               </CardContent>
             </>
           )}
