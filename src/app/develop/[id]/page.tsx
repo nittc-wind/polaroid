@@ -193,7 +193,7 @@ export default function DevelopPage() {
                         alt="完成したチェキ"
                         fill
                         className="object-cover rounded-2xl"
-                        sizes="(max-width: 600px) 80vw, 300px"
+                        sizes="(max-width: 600px) 80vw, 180px"
                         unoptimized={true} // Supabase署名付きURL用に最適化を無効化
                         onError={(e) => {
                           console.error("Image load error:", e);

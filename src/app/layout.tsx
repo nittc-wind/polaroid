@@ -88,6 +88,7 @@ export default function RootLayout({
           <main className="flex-1 overflow-auto">{children}</main>
           <footer className="flex-shrink-0 bg-[#dfc7c7] border-t p-4 text-center text-sm text-gray-600">
             <p>&copy; 2025 ともだちチェキ</p>
+            <a href="/develop/[sample-id]"></a>
           </footer>
         </Providers>
       </body>
