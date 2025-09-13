@@ -4,13 +4,13 @@ version: 1.0
 date_created: 2025-01-21
 last_updated: 2025-01-21
 owner: Development Team
-status: "Planned"
+status: "Completed"
 tags: ["feature", "authentication", "photo-management"]
 ---
 
 # ログインして思い出に追加機能の実装
 
-![Status: Planned](https://img.shields.io/badge/status-Planned-blue)
+![Status: Completed](https://img.shields.io/badge/status-Completed-green)
 
 未ログインユーザーが写真受け取り後に、ログイン/新規登録を行い、自動的に写真をユーザーアカウントに紐付ける機能を実装する。
 
@@ -56,12 +56,12 @@ tags: ["feature", "authentication", "photo-management"]
 
 - GOAL-003: complete画面での自動紐付け機能を実装
 
-| Task     | Description                                     | Completed | Date |
-| -------- | ----------------------------------------------- | --------- | ---- |
-| TASK-008 | URLクエリパラメータによる自動紐付けトリガー実装 |           |      |
-| TASK-009 | 紐付け成功時のUI更新実装                        |           |      |
-| TASK-010 | エラーハンドリングとユーザーフィードバック実装  |           |      |
-| TASK-011 | ローディング状態の適切な表示実装                |           |      |
+| Task     | Description                                     | Completed | Date       |
+| -------- | ----------------------------------------------- | --------- | ---------- |
+| TASK-008 | URLクエリパラメータによる自動紐付けトリガー実装 | ✅        | 2025-01-21 |
+| TASK-009 | 紐付け成功時のUI更新実装                        | ✅        | 2025-01-21 |
+| TASK-010 | エラーハンドリングとユーザーフィードバック実装  | ✅        | 2025-01-21 |
+| TASK-011 | ローディング状態の適切な表示実装                | ✅        | 2025-01-21 |
 
 ## 3. Alternatives
 
