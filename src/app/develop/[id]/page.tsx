@@ -107,11 +107,11 @@ export default function DevelopPage() {
   return (
     <div className="min-h-[calc(100vh-53px)] bg-[#dfc7c7] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        <Card className="bg-white rounded-2xl p-6 max-h-[90vh] flex flex-col">
+        <Card className="bg-white rounded-2xl p-4 max-h-[90vh] flex flex-col overflow-hidden">
           {loading ? (
             // ローディング状態
             <>
-              <CardHeader className="p-0 mb-6 text-center">
+              <CardHeader className="p-0 mb-4 text-center flex-shrink-0">
                 <CardTitle className="text-[#0a0a0a] text-lg font-medium mb-2">
                   写真を読み込み中...
                 </CardTitle>
@@ -119,8 +119,8 @@ export default function DevelopPage() {
                   チェキデータを取得しています。
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex flex-col p-0">
-                <div className="flex-1 flex items-center justify-center mb-6">
+              <CardContent className="flex flex-col p-0 flex-1 min-h-0">
+                <div className="flex-1 flex items-center justify-center mb-6 min-h-0">
                   <div className="w-16 h-16 flex items-center justify-center">
                     <svg
                       width="48"
@@ -142,7 +142,7 @@ export default function DevelopPage() {
           ) : error ? (
             // エラー状態
             <>
-              <CardHeader className="p-0 mb-6 text-center">
+              <CardHeader className="p-0 mb-4 text-center flex-shrink-0">
                 <CardTitle className="text-red-600 text-lg font-medium mb-2">
                   エラーが発生しました
                 </CardTitle>
@@ -150,7 +150,7 @@ export default function DevelopPage() {
                   {error}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex flex-col p-0">
+              <CardContent className="flex flex-col p-0 flex-1">
                 <Button asChild className="w-full">
                   <Link href="/">ホームに戻る</Link>
                 </Button>
@@ -159,7 +159,7 @@ export default function DevelopPage() {
           ) : isDeveloped ? (
             // 現像完了後の表示（シンプル版 - 自動遷移のため）
             <>
-              <CardHeader className="p-0 mb-6 text-center">
+              <CardHeader className="p-0 mb-4 text-center flex-shrink-0">
                 <CardTitle className="text-[#0a0a0a] text-lg font-medium mb-2">
                   現像が完了しました！
                 </CardTitle>
@@ -167,10 +167,10 @@ export default function DevelopPage() {
                   完成した写真を確認しています...
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex flex-col p-0">
+              <CardContent className="flex flex-col p-0 flex-1 min-h-0">
                 {/* シンプルな完成写真表示 */}
-                <div className="flex items-center justify-center mb-6">
-                  <div className="w-full aspect-[4/5] bg-[#e5e5e5] rounded-2xl flex items-center justify-center relative overflow-hidden">
+                <div className="flex items-center justify-center mb-4 flex-1 min-h-0">
+                  <div className="w-full max-h-full aspect-[4/5] bg-[#e5e5e5] rounded-2xl flex items-center justify-center relative overflow-hidden">
                     {imageLoadError ? (
                       <div className="absolute inset-0 bg-red-50 border border-red-200 rounded-2xl flex flex-col items-center justify-center p-4">
                         <div className="text-red-800 text-xs text-center mb-2">
@@ -239,7 +239,7 @@ export default function DevelopPage() {
                 </div>
 
                 {/* 遷移中インジケーター */}
-                <div className="text-center text-[#737373] text-sm mb-4">
+                <div className="text-center text-[#737373] text-sm flex-shrink-0">
                   <div className="flex items-center justify-center space-x-1">
                     <div className="w-2 h-2 bg-[#603736] rounded-full animate-bounce"></div>
                     <div
@@ -257,7 +257,7 @@ export default function DevelopPage() {
           ) : (
             // 現像中の表示
             <>
-              <CardHeader className="p-0 mb-4 text-center">
+              <CardHeader className="p-0 mb-3 text-center flex-shrink-0">
                 <CardTitle className="text-[#0a0a0a] text-lg font-medium mb-2">
                   現像中...
                 </CardTitle>
@@ -266,10 +266,10 @@ export default function DevelopPage() {
                 </CardDescription>
               </CardHeader>
 
-              <CardContent className="flex flex-col p-0 space-y-4">
+              <CardContent className="flex flex-col p-0 space-y-3 flex-1 min-h-0 overflow-hidden">
                 {/* プロフィール交換ゲーム */}
                 {isGameActive && currentQuestion && (
-                  <div className="mb-4">
+                  <div className="flex-shrink-0">
                     <QuestionDisplay
                       question={currentQuestion}
                       questionNumber={progressInfo.current}
@@ -280,8 +280,8 @@ export default function DevelopPage() {
                 )}
 
                 {/* プログレスバー */}
-                <div className="mb-4">
-                  <div className="w-full bg-[#e5e5e5] rounded-full h-3 mb-3 overflow-hidden">
+                <div className="flex-shrink-0">
+                  <div className="w-full bg-[#e5e5e5] rounded-full h-3 mb-2 overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-[#603736] to-[#331515] rounded-full transition-all duration-100 ease-out"
                       style={{ width: `${progress}%` }}
@@ -295,9 +295,9 @@ export default function DevelopPage() {
                 </div>
 
                 {/* 現像中のアニメーション表示エリア */}
-                <div className="flex-1 flex items-center justify-center mb-4">
+                <div className="flex-1 flex items-center justify-center min-h-0">
                   <div
-                    className="w-full aspect-[4/5] bg-[#e5e5e5] rounded-2xl flex items-center justify-center relative overflow-hidden"
+                    className="w-full max-h-full aspect-[4/5] bg-[#e5e5e5] rounded-2xl flex items-center justify-center relative overflow-hidden"
                     style={{
                       opacity: Math.max(0.1, progress / 100),
                       filter: `blur(${Math.max(0, 10 - progress / 10)}px)`,
@@ -376,12 +376,14 @@ export default function DevelopPage() {
 
                 {/* 次の質問ボタン */}
                 {isGameActive && currentQuestion && (
-                  <NextQuestionButton
-                    onClick={goToNextQuestion}
-                    hasNextQuestion={hasNextQuestion}
-                    isTransitioning={isTransitioning}
-                    isGameCompleted={gameState.isGameCompleted}
-                  />
+                  <div className="flex-shrink-0">
+                    <NextQuestionButton
+                      onClick={goToNextQuestion}
+                      hasNextQuestion={hasNextQuestion}
+                      isTransitioning={isTransitioning}
+                      isGameCompleted={gameState.isGameCompleted}
+                    />
+                  </div>
                 )}
               </CardContent>
             </>
