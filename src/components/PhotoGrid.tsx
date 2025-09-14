@@ -3,6 +3,7 @@
 import { PhotoCard } from "./PhotoCard";
 import { Button } from "./ui/button";
 import { Camera, RefreshCw, AlertCircle } from "lucide-react";
+import { useMemo } from "react";
 
 interface Photo {
   id: string;
@@ -33,6 +34,7 @@ interface PhotoGridProps {
   onLoadMore: () => void;
   onRefresh: () => void;
   onPhotoClick?: (photo: Photo) => void;
+  groupByDate?: boolean; // 日付ごとにグループ化するかどうか
 }
 
 export function PhotoGrid({
@@ -43,7 +45,36 @@ export function PhotoGrid({
   onLoadMore,
   onRefresh,
   onPhotoClick,
+  groupByDate = false,
 }: PhotoGridProps) {
+  // 日付ごとにグループ化するかどうかで表示を分ける
+  const groupedPhotos = useMemo(() => {
+    if (!groupByDate) return null;
+
+    const groups: Array<{ date: string; photos: Photo[] }> = [];
+    const photosByDate = photos.reduce(
+      (acc, photo) => {
+        const date = new Date(photo.created_at).toLocaleDateString("ja-JP", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        });
+        if (!acc[date]) acc[date] = [];
+        acc[date].push(photo);
+        return acc;
+      },
+      {} as Record<string, Photo[]>,
+    );
+
+    Object.entries(photosByDate).forEach(([date, datePhotos]) => {
+      groups.push({ date, photos: datePhotos });
+    });
+
+    // 新しい日付順にソート
+    return groups.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+  }, [photos, groupByDate]);
   // エラー状態
   if (error) {
     return (
@@ -85,7 +116,7 @@ export function PhotoGrid({
       <div className="flex flex-col items-center justify-center py-12 px-4">
         <Camera className="w-16 h-16 text-gray-400 mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">
-          まだ写真がありません
+          受け取り済みの写真がありません
         </h3>
         <p className="text-sm text-gray-600 text-center mb-4">
           カメラで写真を撮影して、思い出を作りましょう！
@@ -102,12 +133,34 @@ export function PhotoGrid({
 
   return (
     <div className="space-y-4">
-      {/* 写真グリッド */}
-      <div className="grid grid-cols-3 gap-2">
-        {photos.map((photo) => (
-          <PhotoCard key={photo.id} photo={photo} onClick={onPhotoClick} />
-        ))}
-      </div>
+      {/* 日付グループ化表示 */}
+      {groupByDate && groupedPhotos ? (
+        <div className="space-y-6">
+          {groupedPhotos.map((group) => (
+            <div key={group.date}>
+              <div className="text-[#603736] text-sm font-semibold mb-2 border-b border-[#e5e5e5] pb-1">
+                {group.date}
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {group.photos.map((photo) => (
+                  <PhotoCard
+                    key={photo.id}
+                    photo={photo}
+                    onClick={onPhotoClick}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        /* 通常の写真グリッド */
+        <div className="grid grid-cols-3 gap-2">
+          {photos.map((photo) => (
+            <PhotoCard key={photo.id} photo={photo} onClick={onPhotoClick} />
+          ))}
+        </div>
+      )}
 
       {/* さらに読み込みボタン */}
       {hasMore && (
