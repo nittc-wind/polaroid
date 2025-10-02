@@ -171,9 +171,9 @@ export default function CompletePage({
   };
 
   const handleLoginAndAdd = () => {
-    // returnUrl とclaim パラメータ付きでログイン画面に遷移
+    // returnUrl とclaim パラメータ付きで新規登録画面に遷移
     const returnUrl = encodeURIComponent(`/complete/${id}`);
-    window.location.href = `/auth/signin?returnUrl=${returnUrl}&claim=true`;
+    window.location.href = `/auth/signup?returnUrl=${returnUrl}&claim=true`;
   };
 
   // ログイン状態に応じたアクションボタンをレンダリング
